@@ -1,0 +1,50 @@
+services:
+  voice-agent-kit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - MCP_ENDPOINT=${MCP_ENDPOINT}
+      - SESSION_TTL=${SESSION_TTL:-3600}
+      - MAX_HISTORY_TURNS=${MAX_HISTORY_TURNS:-20}
+      - LATENCY_BUDGET_MS=${LATENCY_BUDGET_MS:-800}
+      - STT_BUDGET_MS=${STT_BUDGET_MS:-200}
+      - MCP_BUDGET_MS=${MCP_BUDGET_MS:-400}
+      - TTS_BUDGET_MS=${TTS_BUDGET_MS:-200}
+      - OTEL_EXPORTER_ENDPOINT=${OTEL_EXPORTER_ENDPOINT}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-voice-agent-kit}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "--eval", "require('http').get('http://localhost:3000/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Local MCP server for testing
+  # hybrid-rag-qdrant:
+  #   image: hybrid-rag-qdrant:latest
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - QDRANT_URL=http://qdrant:6333
+  #   depends_on:
+  #     - qdrant
+
+  # Optional: Qdrant vector database
+  # qdrant:
+  #   image: qdrant/qdrant:latest
+  #   ports:
+  #     - "6333:6333"
+  #   volumes:
+  #     - qdrant_storage:/qdrant/storage
+
+# volumes:
+#   qdrant_storage:
