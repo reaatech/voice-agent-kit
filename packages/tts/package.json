@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-polly": "^3.1031.0",
-    "@aws-sdk/credential-provider-ini": "^3.972.30",
+    "@aws-sdk/credential-provider-ini": "^3.972.36",
     "@google-cloud/text-to-speech": "^6.4.0",
     "@voice-agent-kit/core": "workspace:*",
     "debug": "^4.3.4",
