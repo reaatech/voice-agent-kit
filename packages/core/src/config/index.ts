@@ -31,7 +31,7 @@ const MCPConfigSchema = z.object({
   endpoint: z.string().url(),
   auth: z.object({
     type: z.string().min(1),
-    credentials: z.record(z.string()),
+    credentials: z.record(z.string(), z.string()),
   }).optional(),
   timeout: z.number().min(100).max(30000).default(400),
 });
@@ -114,7 +114,7 @@ function parseConfig(rawConfig: Record<string, unknown>): VoiceAgentKitConfig {
   const result = VoiceAgentKitConfigSchema.safeParse(rawConfig);
   
   if (!result.success) {
-    const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const errors = result.error.issues.map((e: { path: (string | number)[]; message: string }) => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Invalid configuration: ${errors}`);
   }
   
