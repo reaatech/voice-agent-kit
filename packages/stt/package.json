@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-transcribe-streaming": "^3.1031.0",
-    "@aws-sdk/credential-provider-ini": "^3.972.30",
+    "@aws-sdk/credential-provider-ini": "^3.972.36",
     "@google-cloud/speech": "^7.3.0",
     "@voice-agent-kit/core": "workspace:*",
     "debug": "^4.3.4",
