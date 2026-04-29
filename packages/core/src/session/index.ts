@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { Session, Turn, SessionConfig } from '../types/index.js';
 
-
 export interface SessionManagerOptions {
   defaultTTL: number;
   maxTurns: number;
@@ -29,7 +28,7 @@ export class SessionManager {
   }): Session {
     const sessionId = uuidv4();
     const now = new Date();
-    
+
     const session: Session = {
       sessionId,
       callSid: params.callSid,
@@ -43,19 +42,19 @@ export class SessionManager {
       metadata: params.metadata ?? {},
       status: 'active',
     };
-    
+
     this.sessions.set(sessionId, session);
     return session;
   }
 
   getSession(sessionId: string): Session | undefined {
     const session = this.sessions.get(sessionId);
-    
+
     if (session && this.isSessionExpired(session)) {
       this.closeSession(sessionId);
       return undefined;
     }
-    
+
     return session;
   }
 
@@ -74,67 +73,67 @@ export class SessionManager {
 
   updateSession(sessionId: string, updates: Partial<Session>): Session | undefined {
     const session = this.getSession(sessionId);
-    
+
     if (!session) {
       return undefined;
     }
-    
+
     Object.assign(session, updates);
     session.lastActivityAt = new Date();
-    
+
     return session;
   }
 
   addTurn(sessionId: string, turn: Omit<Turn, 'turnId'>): Turn | undefined {
     const session = this.getSession(sessionId);
-    
+
     if (!session) {
       return undefined;
     }
-    
+
     const turnWithId: Turn = {
       ...turn,
       turnId: uuidv4(),
     };
-    
+
     session.turns.push(turnWithId);
     session.lastActivityAt = new Date();
-    
+
     // Enforce max turns limit
     if (session.turns.length > this.options.maxTurns) {
       session.turns = session.turns.slice(-this.options.maxTurns);
     }
-    
+
     return turnWithId;
   }
 
   getConversationHistory(sessionId: string, maxTurns?: number): Turn[] {
     const session = this.getSession(sessionId);
-    
+
     if (!session) {
       return [];
     }
-    
+
     const limit = maxTurns ?? this.options.maxTurns;
     return session.turns.slice(-limit);
   }
 
   closeSession(sessionId: string): boolean {
     const session = this.sessions.get(sessionId);
-    
+
     if (!session) {
       return false;
     }
-    
+
     session.status = 'closed';
     session.lastActivityAt = new Date();
-    
+
     // Remove after a short delay to allow for final cleanup
     const timer = setTimeout(() => {
       this.sessions.delete(sessionId);
     }, 5000);
     timer.unref?.();
-    
+
     return true;
   }
 
@@ -160,11 +159,11 @@ export class SessionManager {
 
   private startCleanupTimer() {
     const interval = this.options.cleanupInterval ?? 60000; // Default: 1 minute
-    
+
     this.cleanupTimer = setInterval(() => {
       this.cleanupExpiredSessions();
     }, interval);
-    
+
     // Don't let the timer prevent process exit
     if (this.cleanupTimer.unref) {
       this.cleanupTimer.unref();
@@ -184,14 +183,14 @@ export class SessionManager {
       clearInterval(this.cleanupTimer);
       this.cleanupTimer = undefined;
     }
-    
+
     // Close all active sessions
     for (const [_sessionId, session] of this.sessions.entries()) {
       if (session.status === 'active') {
         session.status = 'closed';
       }
     }
-    
+
     this.sessions.clear();
   }
 }
@@ -208,14 +207,14 @@ export function getDefaultSessionManager(): SessionManager {
         maxTokens: 4000,
       },
     };
-    
+
     defaultSessionManager = new SessionManager({
       defaultTTL: config.ttl,
       maxTurns: config.history.maxTurns,
       maxTokens: config.history.maxTokens,
     });
   }
-  
+
   return defaultSessionManager;
 }
 
@@ -223,7 +222,7 @@ export function initializeSessionManager(options: SessionManagerOptions): Sessio
   if (defaultSessionManager) {
     defaultSessionManager.destroy();
   }
-  
+
   defaultSessionManager = new SessionManager(options);
   return defaultSessionManager;
 }

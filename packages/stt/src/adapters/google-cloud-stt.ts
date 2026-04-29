@@ -22,7 +22,7 @@ interface RecognitionStream extends NodeJS.WritableStream {
 
 export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider {
   readonly name = 'google-cloud-stt';
-  
+
   private client: SpeechClient | null = null;
   private connected = false;
   private _config: GoogleCloudSTTConfig | null = null;
@@ -42,12 +42,14 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
 
   async connect(config: GoogleCloudSTTConfig): Promise<void> {
     this._config = config;
-    
+
     const apiKey = config.apiKey;
     const projectId = config.projectId;
-    
+
     if (!apiKey && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      throw new Error('Google Cloud credentials are required (API key or GOOGLE_APPLICATION_CREDENTIALS)');
+      throw new Error(
+        'Google Cloud credentials are required (API key or GOOGLE_APPLICATION_CREDENTIALS)'
+      );
     }
 
     this.client = new SpeechClient({
@@ -57,7 +59,7 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
     });
 
     try {
-      this.recognizeStream = await this.startStreamingRecognition(config) as RecognitionStream;
+      this.recognizeStream = (await this.startStreamingRecognition(config)) as RecognitionStream;
       this.setupRecognitionHandlers();
       this.connected = true;
       this.reconnectCount = 0;
@@ -69,14 +71,16 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
     }
   }
 
-  private async startStreamingRecognition(config: GoogleCloudSTTConfig): Promise<RecognitionStream> {
+  private async startStreamingRecognition(
+    config: GoogleCloudSTTConfig
+  ): Promise<RecognitionStream> {
     if (!this.client) {
       throw new Error('Client not initialized');
     }
 
     const request = {
       config: {
-        encoding: config.encoding === 'mulaw' ? 'MULAW' : 'LINEAR16' as const,
+        encoding: config.encoding === 'mulaw' ? 'MULAW' : ('LINEAR16' as const),
         sampleRateHertz: config.sampleRate || 8000,
         languageCode: config.languageCode || 'en-US',
         alternativeLanguageCodes: config.alternativeLanguageCodes,
@@ -97,7 +101,9 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
   }
 
   private setupRecognitionHandlers(): void {
-    if (!this.recognizeStream) {return;}
+    if (!this.recognizeStream) {
+      return;
+    }
 
     this.recognizeStream.on('data', (response: unknown) => {
       this.handleResponse(response);
@@ -118,19 +124,26 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
   }
 
   private handleResponse(response: unknown): void {
-    const typedResponse = response as { results?: Array<{ alternatives?: Array<{ transcript?: string; confidence?: number }>; isFinal?: boolean }> };
+    const typedResponse = response as {
+      results?: Array<{
+        alternatives?: Array<{ transcript?: string; confidence?: number }>;
+        isFinal?: boolean;
+      }>;
+    };
     if (!typedResponse.results || typedResponse.results.length === 0) {
       return;
     }
 
     for (const result of typedResponse.results) {
-      if (!result) {continue;}
+      if (!result) {
+        continue;
+      }
       if (!result.alternatives || result.alternatives.length === 0) {
         continue;
       }
 
       const alternative = result.alternatives[0];
-      
+
       if (alternative && alternative.transcript) {
         const utterance: Utterance = {
           transcript: alternative.transcript,
@@ -138,9 +151,9 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
           isFinal: result.isFinal ?? false,
           timestamp: Date.now(),
         };
-        
+
         this.emit('utterance', utterance);
-        
+
         if (result.isFinal) {
           this.emit('endOfSpeech');
         }
@@ -183,12 +196,12 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
   async close(): Promise<void> {
     this.audioQueue = [];
     this.connected = false;
-    
+
     if (this.recognizeStream) {
       this.recognizeStream.destroy();
       this.recognizeStream = null;
     }
-    
+
     if (this.client) {
       void this.client.close();
     }
@@ -212,16 +225,18 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
       this.emit('error', new Error(`Failed to reconnect after ${this.reconnectCount} attempts`));
       return;
     }
-    
+
     this.reconnectCount++;
     const config = this._config;
-    
+
     void this.connect(config).catch((error) => {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     });
   }
 }
 
-export function createGoogleCloudSTTProvider(options?: GoogleCloudSTTOptions): GoogleCloudSTTProvider {
+export function createGoogleCloudSTTProvider(
+  options?: GoogleCloudSTTOptions
+): GoogleCloudSTTProvider {
   return new GoogleCloudSTTProvider(options);
 }

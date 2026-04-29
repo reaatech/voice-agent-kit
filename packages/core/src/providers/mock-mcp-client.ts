@@ -45,7 +45,7 @@ export class MockMCPClient implements MCPClient {
     this.requestCount++;
 
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, this.options.delay));
+    await new Promise((resolve) => setTimeout(resolve, this.options.delay));
 
     if (this.options.shouldFail) {
       throw new Error(this.options.failureMessage ?? 'MCP server error');

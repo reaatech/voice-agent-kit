@@ -1,6 +1,6 @@
 /**
  * @voice-agent-kit/telephony
- * 
+ *
  * Twilio Media Streams adapter for voice AI agents.
  */
 
@@ -15,8 +15,5 @@ export type {
   TwilioOutboundMessage,
   TwilioStreamConfig,
 } from './types.js';
-export type {
-  TwilioHandlerConfig,
-  BargeInEvent,
-} from './twilio-handler.js';
+export type { TwilioHandlerConfig, BargeInEvent } from './twilio-handler.js';
 export { createTwilioHandler } from './factory.js';

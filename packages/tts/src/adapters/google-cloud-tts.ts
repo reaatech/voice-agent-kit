@@ -4,7 +4,6 @@ import type { AudioChunk } from '@voice-agent-kit/core';
 import type { TTSProvider, GoogleCloudTTSConfig } from '../interface.js';
 import { TTSProviderInterface } from '../interface.js';
 
-
 export interface GoogleCloudTTSOptions {
   projectId?: string;
   keyFilename?: string;
@@ -14,7 +13,7 @@ export class GoogleCloudTTSProvider implements TTSProvider {
   readonly name = 'google-cloud-tts';
   readonly supportsStreaming = true;
   readonly firstByteLatencyMs: number | null = null;
-  
+
   private client: TextToSpeechClient | null = null;
   private options: GoogleCloudTTSOptions;
   private lastLatency: number | null = null;
@@ -42,10 +41,12 @@ export class GoogleCloudTTSProvider implements TTSProvider {
     this.client = new TextToSpeechClient({
       projectId,
       keyFilename,
-      credentials: apiKey ? {
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: apiKey.replace(/\\n/g, '\n'),
-      } : undefined,
+      credentials: apiKey
+        ? {
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: apiKey.replace(/\\n/g, '\n'),
+          }
+        : undefined,
     });
 
     return this.client;
@@ -53,7 +54,7 @@ export class GoogleCloudTTSProvider implements TTSProvider {
 
   async *synthesize(text: string, config: GoogleCloudTTSConfig): AsyncIterable<AudioChunk> {
     const client = await this.getClient(config);
-    
+
     const voiceName = config.voiceName || 'en-US-Standard-A';
     const languageCode = config.languageCode || 'en-US';
     const ssmlGender = config.ssmlGender || 'FEMALE';
@@ -92,7 +93,7 @@ export class GoogleCloudTTSProvider implements TTSProvider {
 
       // Google Cloud TTS returns base64-encoded audio
       const audioBuffer = Buffer.from(response.audioContent as Buffer);
-      
+
       // Split into chunks for streaming (20ms frames at 8kHz = 160 samples = 320 bytes for 16-bit)
       const chunkSize = Math.floor((sampleRateHertz / 1000) * 20 * 2); // 20ms of 16-bit audio
       let offset = 0;
@@ -113,14 +114,14 @@ export class GoogleCloudTTSProvider implements TTSProvider {
         const chunk: AudioChunk = {
           buffer: chunkBuffer,
           sampleRate: sampleRateHertz,
-          encoding: audioEncoding === 'LINEAR16' ? 'linear16' : 
-                    audioEncoding === 'MULAW' ? 'mulaw' : 'pcm',
+          encoding:
+            audioEncoding === 'LINEAR16' ? 'linear16' : audioEncoding === 'MULAW' ? 'mulaw' : 'pcm',
           channels: 1,
           timestamp: Date.now(),
         };
 
         yield TTSProviderInterface.formatAudioForTwilio(chunk);
-        
+
         offset += chunkSize;
       }
     } catch (error) {
@@ -145,6 +146,8 @@ export class GoogleCloudTTSProvider implements TTSProvider {
   }
 }
 
-export function createGoogleCloudTTSProvider(options?: GoogleCloudTTSOptions): GoogleCloudTTSProvider {
+export function createGoogleCloudTTSProvider(
+  options?: GoogleCloudTTSOptions
+): GoogleCloudTTSProvider {
   return new GoogleCloudTTSProvider(options);
 }

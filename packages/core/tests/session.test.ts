@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { SessionManager, initializeSessionManager, getDefaultSessionManager } from '../src/session/index.js';
+import {
+  SessionManager,
+  initializeSessionManager,
+  getDefaultSessionManager,
+} from '../src/session/index.js';
 import type { Session } from '../src/types/index.js';
 
 describe('SessionManager', () => {
@@ -28,7 +32,7 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       expect(session.sessionId).toMatch(/^[a-f0-9-]{36}$/);
       expect(session.callSid).toBe('CA123');
       expect(session.mcpEndpoint).toBe('https://mcp.example.com');
@@ -47,7 +51,7 @@ describe('SessionManager', () => {
         ttsProvider: 'deepgram',
         metadata: { callerName: 'John' },
       });
-      
+
       expect(session.metadata.callerName).toBe('John');
     });
   });
@@ -61,7 +65,7 @@ describe('SessionManager', () => {
         ttsProvider: 'deepgram',
       });
       const retrieved = sessionManager.getSession(created.sessionId);
-      
+
       expect(retrieved).toBeDefined();
       expect(retrieved?.sessionId).toBe(created.sessionId);
     });
@@ -78,10 +82,10 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       // Advance time past TTL
       vi.advanceTimersByTime(3601000);
-      
+
       const result = sessionManager.getSession(session.sessionId);
       expect(result).toBeUndefined();
     });
@@ -95,7 +99,7 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const retrieved = sessionManager.getSessionByCallSid('CA123');
       expect(retrieved).toBeDefined();
       expect(retrieved?.callSid).toBe('CA123');
@@ -115,11 +119,11 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const updated = sessionManager.updateSession(session.sessionId, {
         metadata: { twilioCallSid: 'CA456' },
       });
-      
+
       expect(updated?.metadata.twilioCallSid).toBe('CA456');
     });
 
@@ -130,12 +134,12 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const before = session.lastActivityAt.getTime();
       vi.advanceTimersByTime(1000);
-      
+
       sessionManager.updateSession(session.sessionId, { metadata: { test: true } });
-      
+
       expect(session.lastActivityAt.getTime()).toBeGreaterThan(before);
     });
 
@@ -153,13 +157,13 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const turn = sessionManager.addTurn(session.sessionId, {
         userUtterance: 'Hello',
         agentResponse: 'Hi there!',
         latencyMs: 100,
       });
-      
+
       expect(turn).toBeDefined();
       expect(turn?.turnId).toMatch(/^[a-f0-9-]{36}$/);
       expect(turn?.userUtterance).toBe('Hello');
@@ -173,23 +177,35 @@ describe('SessionManager', () => {
         maxTurns: 2,
         maxTokens: 1000,
       });
-      
+
       const session = smallTurnManager.createSession({
         callSid: 'CA123',
         mcpEndpoint: 'https://mcp.example.com',
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
-      smallTurnManager.addTurn(session.sessionId, { userUtterance: 'Q1', agentResponse: 'A1', latencyMs: 100 });
-      smallTurnManager.addTurn(session.sessionId, { userUtterance: 'Q2', agentResponse: 'A2', latencyMs: 100 });
-      smallTurnManager.addTurn(session.sessionId, { userUtterance: 'Q3', agentResponse: 'A3', latencyMs: 100 });
-      
+
+      smallTurnManager.addTurn(session.sessionId, {
+        userUtterance: 'Q1',
+        agentResponse: 'A1',
+        latencyMs: 100,
+      });
+      smallTurnManager.addTurn(session.sessionId, {
+        userUtterance: 'Q2',
+        agentResponse: 'A2',
+        latencyMs: 100,
+      });
+      smallTurnManager.addTurn(session.sessionId, {
+        userUtterance: 'Q3',
+        agentResponse: 'A3',
+        latencyMs: 100,
+      });
+
       const updated = smallTurnManager.getSession(session.sessionId);
       expect(updated?.turns).toHaveLength(2);
       expect(updated?.turns[0]?.userUtterance).toBe('Q2');
       expect(updated?.turns[1]?.userUtterance).toBe('Q3');
-      
+
       smallTurnManager.destroy();
     });
 
@@ -211,10 +227,18 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
-      sessionManager.addTurn(session.sessionId, { userUtterance: 'Q1', agentResponse: 'A1', latencyMs: 100 });
-      sessionManager.addTurn(session.sessionId, { userUtterance: 'Q2', agentResponse: 'A2', latencyMs: 100 });
-      
+
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q1',
+        agentResponse: 'A1',
+        latencyMs: 100,
+      });
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q2',
+        agentResponse: 'A2',
+        latencyMs: 100,
+      });
+
       const history = sessionManager.getConversationHistory(session.sessionId);
       expect(history).toHaveLength(2);
     });
@@ -226,11 +250,23 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
-      sessionManager.addTurn(session.sessionId, { userUtterance: 'Q1', agentResponse: 'A1', latencyMs: 100 });
-      sessionManager.addTurn(session.sessionId, { userUtterance: 'Q2', agentResponse: 'A2', latencyMs: 100 });
-      sessionManager.addTurn(session.sessionId, { userUtterance: 'Q3', agentResponse: 'A3', latencyMs: 100 });
-      
+
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q1',
+        agentResponse: 'A1',
+        latencyMs: 100,
+      });
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q2',
+        agentResponse: 'A2',
+        latencyMs: 100,
+      });
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q3',
+        agentResponse: 'A3',
+        latencyMs: 100,
+      });
+
       const history = sessionManager.getConversationHistory(session.sessionId, 2);
       expect(history).toHaveLength(2);
       expect(history[0]?.userUtterance).toBe('Q2');
@@ -251,9 +287,9 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const result = sessionManager.closeSession(session.sessionId);
-      
+
       expect(result).toBe(true);
       expect(session.status).toBe('closed');
     });
@@ -278,7 +314,7 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       expect(sessionManager.getActiveSessionCount()).toBe(2);
     });
 
@@ -289,9 +325,9 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       sessionManager.closeSession(session.sessionId);
-      
+
       expect(sessionManager.getActiveSessionCount()).toBe(0);
     });
   });
@@ -310,7 +346,7 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       const sessions = sessionManager.getAllSessions();
       expect(sessions).toHaveLength(2);
     });
@@ -324,9 +360,9 @@ describe('SessionManager', () => {
         sttProvider: 'deepgram',
         ttsProvider: 'deepgram',
       });
-      
+
       sessionManager.destroy();
-      
+
       expect(session.status).toBe('closed');
       expect(sessionManager.getAllSessions()).toHaveLength(0);
     });
@@ -337,7 +373,7 @@ describe('getDefaultSessionManager', () => {
   it('should return a singleton instance', () => {
     const instance1 = getDefaultSessionManager();
     const instance2 = getDefaultSessionManager();
-    
+
     expect(instance1).toBe(instance2);
   });
 });
@@ -345,13 +381,13 @@ describe('getDefaultSessionManager', () => {
 describe('initializeSessionManager', () => {
   it('should create a new instance and destroy old one', () => {
     const instance1 = getDefaultSessionManager();
-    
+
     const newInstance = initializeSessionManager({
       defaultTTL: 7200,
       maxTurns: 30,
       maxTokens: 6000,
     });
-    
+
     expect(newInstance).not.toBe(instance1);
     expect(newInstance.getActiveSessionCount()).toBe(0);
   });

@@ -1,4 +1,3 @@
-
 import { EventEmitter } from 'events';
 
 import { SpanKind } from '@opentelemetry/api';
@@ -57,14 +56,17 @@ export interface PipelineDependencies {
 
 export class Pipeline extends EventEmitter {
   private readonly dependencies: PipelineDependencies;
-  private readonly activeTurns: Map<string, {
-    sessionId: string;
-    turnId: string;
-    startTime: number;
-    audioChunks: AudioChunk[];
-    utterances: Utterance[];
-    isProcessing: boolean;
-  }> = new Map();
+  private readonly activeTurns: Map<
+    string,
+    {
+      sessionId: string;
+      turnId: string;
+      startTime: number;
+      audioChunks: AudioChunk[];
+      utterances: Utterance[];
+      isProcessing: boolean;
+    }
+  > = new Map();
   private currentSessionId?: string;
   private activeTTSTurnId?: string;
   private ttsCancelled = false;
@@ -95,7 +97,12 @@ export class Pipeline extends EventEmitter {
       await this.dependencies.ttsProvider.connect?.(this.dependencies.config.tts);
       await this.dependencies.mcpClient.connect();
     } catch (error) {
-      this.emit('pipeline:error', this.createEvent('pipeline:error', session.sessionId, { error: error instanceof Error ? error.message : String(error) }));
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', session.sessionId, {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      );
       throw error;
     }
   }
@@ -112,17 +119,23 @@ export class Pipeline extends EventEmitter {
         // best-effort cancellation
       }
       getObservability().recordBargeIn(sessionId);
-      this.emit('pipeline:barge_in', this.createEvent('pipeline:barge_in', sessionId, {
-        turnId: this.activeTTSTurnId,
-      }));
+      this.emit(
+        'pipeline:barge_in',
+        this.createEvent('pipeline:barge_in', sessionId, {
+          turnId: this.activeTTSTurnId,
+        })
+      );
     }
   }
 
   async processAudioChunk(sessionId: string, chunk: AudioChunk): Promise<void> {
     const session = this.dependencies.sessionManager.getSession(sessionId);
-    
+
     if (!session || session.status !== 'active') {
-      this.emit('pipeline:error', this.createEvent('pipeline:error', sessionId, { error: 'Session not found or inactive' }));
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', sessionId, { error: 'Session not found or inactive' })
+      );
       return;
     }
 
@@ -134,12 +147,19 @@ export class Pipeline extends EventEmitter {
     const observability = getObservability();
     const sessionId = this.getActiveSessionId();
 
-    const span = observability.startSpan('voice.stt', {
-      sessionId,
-      provider: this.dependencies.config.stt.provider,
-      model: typeof this.dependencies.config.stt.model === 'string' ? this.dependencies.config.stt.model : undefined,
-      isFinal: utterance.isFinal,
-    }, SpanKind.CLIENT);
+    const span = observability.startSpan(
+      'voice.stt',
+      {
+        sessionId,
+        provider: this.dependencies.config.stt.provider,
+        model:
+          typeof this.dependencies.config.stt.model === 'string'
+            ? this.dependencies.config.stt.model
+            : undefined,
+        isFinal: utterance.isFinal,
+      },
+      SpanKind.CLIENT
+    );
 
     let createdTurnId: string | undefined;
 
@@ -159,7 +179,10 @@ export class Pipeline extends EventEmitter {
         const newSessionId = this.getActiveSessionId();
 
         if (!newSessionId) {
-          this.emit('pipeline:error', this.createEvent('pipeline:error', 'unknown', { error: 'No active session' }));
+          this.emit(
+            'pipeline:error',
+            this.createEvent('pipeline:error', 'unknown', { error: 'No active session' })
+          );
           span?.end();
           return;
         }
@@ -188,7 +211,10 @@ export class Pipeline extends EventEmitter {
         activeTurnSessionId = newSessionId;
         createdTurnId = turnId;
 
-        this.emit('pipeline:stt:start', this.createEvent('pipeline:stt:start', newSessionId, { turnId }));
+        this.emit(
+          'pipeline:stt:start',
+          this.createEvent('pipeline:stt:start', newSessionId, { turnId })
+        );
       }
 
       const turn = this.activeTurns.get(activeTurnId);
@@ -202,20 +228,26 @@ export class Pipeline extends EventEmitter {
 
       if (utterance.isFinal) {
         this.dependencies.latencyEnforcer.endStage(activeTurnId, 'stt');
-        this.emit('pipeline:stt:final', this.createEvent('pipeline:stt:final', turn.sessionId, {
-          turnId: activeTurnId,
-          transcript: utterance.transcript,
-          confidence: utterance.confidence,
-        }));
+        this.emit(
+          'pipeline:stt:final',
+          this.createEvent('pipeline:stt:final', turn.sessionId, {
+            turnId: activeTurnId,
+            transcript: utterance.transcript,
+            confidence: utterance.confidence,
+          })
+        );
 
         span?.end();
         await this.processWithMCP(turn.sessionId, activeTurnId, utterance.transcript);
       } else {
-        this.emit('pipeline:stt:interim', this.createEvent('pipeline:stt:interim', turn.sessionId, {
-          turnId: activeTurnId,
-          transcript: utterance.transcript,
-          confidence: utterance.confidence,
-        }));
+        this.emit(
+          'pipeline:stt:interim',
+          this.createEvent('pipeline:stt:interim', turn.sessionId, {
+            turnId: activeTurnId,
+            transcript: utterance.transcript,
+            confidence: utterance.confidence,
+          })
+        );
       }
     } catch (error) {
       if (createdTurnId) {
@@ -235,36 +267,49 @@ export class Pipeline extends EventEmitter {
     for (const [turnId, turn] of this.activeTurns.entries()) {
       if (turn.isProcessing && turn.utterances.length > 0) {
         const lastUtterance = turn.utterances[turn.utterances.length - 1];
-        
+
         if (lastUtterance && !lastUtterance.isFinal) {
           // Force final utterance
           lastUtterance.isFinal = true;
           this.dependencies.latencyEnforcer.endStage(turnId, 'stt');
-          
+
           await this.processWithMCP(turn.sessionId, turnId, lastUtterance.transcript);
         }
       }
     }
   }
 
-  private async processWithMCP(sessionId: string, turnId: string, utterance: string): Promise<void> {
+  private async processWithMCP(
+    sessionId: string,
+    turnId: string,
+    utterance: string
+  ): Promise<void> {
     const observability = getObservability();
     const session = this.dependencies.sessionManager.getSession(sessionId);
 
-    if (!session) {return;}
+    if (!session) {
+      return;
+    }
 
-    const span = observability.startSpan('voice.mcp', {
-      sessionId,
-      turnId,
-      provider: 'mcp-client',
-      endpoint: session.mcpEndpoint,
-    }, SpanKind.CLIENT);
+    const span = observability.startSpan(
+      'voice.mcp',
+      {
+        sessionId,
+        turnId,
+        provider: 'mcp-client',
+        endpoint: session.mcpEndpoint,
+      },
+      SpanKind.CLIENT
+    );
 
     this.dependencies.latencyEnforcer.startStage(turnId, 'mcp');
-    this.emit('pipeline:mcp:request', this.createEvent('pipeline:mcp:request', sessionId, {
-      turnId,
-      utterance,
-    }));
+    this.emit(
+      'pipeline:mcp:request',
+      this.createEvent('pipeline:mcp:request', sessionId, {
+        turnId,
+        utterance,
+      })
+    );
 
     try {
       const history: Array<{ role: string; content: string }> = [];
@@ -283,11 +328,14 @@ export class Pipeline extends EventEmitter {
       this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
       span?.setAttribute('response_length', response.text.length);
       span?.setAttribute('tool_calls_count', response.toolCalls.length);
-      this.emit('pipeline:mcp:response', this.createEvent('pipeline:mcp:response', sessionId, {
-        turnId,
-        response: response.text,
-        latencyMs: response.latencyMs,
-      }));
+      this.emit(
+        'pipeline:mcp:response',
+        this.createEvent('pipeline:mcp:response', sessionId, {
+          turnId,
+          response: response.text,
+          latencyMs: response.latencyMs,
+        })
+      );
 
       span?.end();
       await this.processWithTTS(sessionId, turnId, response);
@@ -295,31 +343,48 @@ export class Pipeline extends EventEmitter {
       this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
       span?.recordException(error as Error);
       span?.end();
-      this.emit('pipeline:error', this.createEvent('pipeline:error', sessionId, {
-        turnId,
-        error: String(error),
-        stage: 'mcp',
-      }));
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', sessionId, {
+          turnId,
+          error: String(error),
+          stage: 'mcp',
+        })
+      );
 
       this.activeTurns.delete(turnId);
     }
   }
 
-  private async processWithTTS(sessionId: string, turnId: string, response: AgentResponse): Promise<void> {
+  private async processWithTTS(
+    sessionId: string,
+    turnId: string,
+    response: AgentResponse
+  ): Promise<void> {
     const observability = getObservability();
-    const span = observability.startSpan('voice.tts', {
-      sessionId,
-      turnId,
-      provider: this.dependencies.config.tts.provider,
-      voice: typeof this.dependencies.config.tts.voice === 'string' ? this.dependencies.config.tts.voice : undefined,
-      textLength: response.text.length,
-    }, SpanKind.CLIENT);
+    const span = observability.startSpan(
+      'voice.tts',
+      {
+        sessionId,
+        turnId,
+        provider: this.dependencies.config.tts.provider,
+        voice:
+          typeof this.dependencies.config.tts.voice === 'string'
+            ? this.dependencies.config.tts.voice
+            : undefined,
+        textLength: response.text.length,
+      },
+      SpanKind.CLIENT
+    );
 
     this.dependencies.latencyEnforcer.startStage(turnId, 'tts');
-    this.emit('pipeline:tts:start', this.createEvent('pipeline:tts:start', sessionId, {
-      turnId,
-      text: response.text,
-    }));
+    this.emit(
+      'pipeline:tts:start',
+      this.createEvent('pipeline:tts:start', sessionId, {
+        turnId,
+        text: response.text,
+      })
+    );
 
     this.activeTTSTurnId = turnId;
     this.ttsCancelled = false;
@@ -335,29 +400,42 @@ export class Pipeline extends EventEmitter {
         }
         if (!firstByteEmitted) {
           this.dependencies.latencyEnforcer.endStage(turnId, 'tts');
-          const firstByteLatency = performance.now() - (this.activeTurns.get(turnId)?.startTime ?? 0);
+          const firstByteLatency =
+            performance.now() - (this.activeTurns.get(turnId)?.startTime ?? 0);
           span?.setAttribute('first_byte_latency_ms', firstByteLatency);
           observability.ttsFirstByteLatency.record(firstByteLatency, { session_id: sessionId });
-          this.emit('pipeline:tts:first_byte', this.createEvent('pipeline:tts:first_byte', sessionId, {
-            turnId,
-            latencyMs: firstByteLatency,
-          }));
+          this.emit(
+            'pipeline:tts:first_byte',
+            this.createEvent('pipeline:tts:first_byte', sessionId, {
+              turnId,
+              latencyMs: firstByteLatency,
+            })
+          );
           firstByteEmitted = true;
         }
 
         audioChunks.push(chunk);
-        this.emit('pipeline:tts:chunk', this.createEvent('pipeline:tts:chunk', sessionId, {
-          turnId,
-          chunkSize: chunk.buffer.length,
-        }));
+        this.emit(
+          'pipeline:tts:chunk',
+          this.createEvent('pipeline:tts:chunk', sessionId, {
+            turnId,
+            chunkSize: chunk.buffer.length,
+          })
+        );
       }
 
       span?.setAttribute('total_chunks', audioChunks.length);
-      span?.setAttribute('total_audio_bytes', audioChunks.reduce((sum, c) => sum + c.buffer.length, 0));
-      this.emit('pipeline:tts:complete', this.createEvent('pipeline:tts:complete', sessionId, {
-        turnId,
-        totalChunks: audioChunks.length,
-      }));
+      span?.setAttribute(
+        'total_audio_bytes',
+        audioChunks.reduce((sum, c) => sum + c.buffer.length, 0)
+      );
+      this.emit(
+        'pipeline:tts:complete',
+        this.createEvent('pipeline:tts:complete', sessionId, {
+          turnId,
+          totalChunks: audioChunks.length,
+        })
+      );
 
       const session = this.dependencies.sessionManager.getSession(sessionId);
 
@@ -382,10 +460,13 @@ export class Pipeline extends EventEmitter {
         budgetExceeded: metrics.budgetExceeded,
         exceededStages: metrics.exceededStages,
       });
-      this.emit('pipeline:turn:end', this.createEvent('pipeline:turn:end', sessionId, {
-        turnId,
-        metrics,
-      }));
+      this.emit(
+        'pipeline:turn:end',
+        this.createEvent('pipeline:turn:end', sessionId, {
+          turnId,
+          metrics,
+        })
+      );
 
       span?.end();
       this.activeTurns.delete(turnId);
@@ -397,11 +478,14 @@ export class Pipeline extends EventEmitter {
       this.dependencies.latencyEnforcer.endStage(turnId, 'tts');
       span?.recordException(error as Error);
       span?.end();
-      this.emit('pipeline:error', this.createEvent('pipeline:error', sessionId, {
-        turnId,
-        error: String(error),
-        stage: 'tts',
-      }));
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', sessionId, {
+          turnId,
+          error: String(error),
+          stage: 'tts',
+        })
+      );
 
       this.activeTurns.delete(turnId);
       if (this.activeTTSTurnId === turnId) {
@@ -419,7 +503,10 @@ export class Pipeline extends EventEmitter {
       await this.dependencies.ttsProvider.close?.();
       await this.dependencies.mcpClient.close();
     } catch (error) {
-      this.emit('pipeline:error', this.createEvent('pipeline:error', sessionId, { error: String(error) }));
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', sessionId, { error: String(error) })
+      );
     }
 
     // Clean up active turns for this session
@@ -444,11 +531,15 @@ export class Pipeline extends EventEmitter {
       }
     }
     const sessions = this.dependencies.sessionManager.getAllSessions();
-    const activeSession = sessions.find(s => s.status === 'active');
+    const activeSession = sessions.find((s) => s.status === 'active');
     return activeSession?.sessionId;
   }
 
-  private createEvent(type: string, sessionId: string, data?: Record<string, unknown>): PipelineEvent {
+  private createEvent(
+    type: string,
+    sessionId: string,
+    data?: Record<string, unknown>
+  ): PipelineEvent {
     return {
       type: type as PipelineEvent['type'],
       sessionId,

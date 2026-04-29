@@ -81,9 +81,7 @@ function createMockSessionManager() {
       timestamp: new Date(),
       latencyMs: 100,
     }),
-    getAllSessions: vi.fn().mockReturnValue([
-      { sessionId: 'session-1', status: 'active' },
-    ]),
+    getAllSessions: vi.fn().mockReturnValue([{ sessionId: 'session-1', status: 'active' }]),
     updateSession: vi.fn(),
     addTurnHistory: vi.fn(),
   };
@@ -105,7 +103,9 @@ function createMockLatencyEnforcer() {
     getStageBudget: vi.fn().mockReturnValue(200),
     getTotalTargetBudget: vi.fn().mockReturnValue(800),
     getTotalHardCap: vi.fn().mockReturnValue(1200),
-    checkStageBudget: vi.fn().mockReturnValue({ withinBudget: true, remainingMs: 100, exceeded: false }),
+    checkStageBudget: vi
+      .fn()
+      .mockReturnValue({ withinBudget: true, remainingMs: 100, exceeded: false }),
     checkTotalBudget: vi.fn().mockReturnValue({
       withinTarget: true,
       withinHardCap: true,
@@ -128,14 +128,20 @@ function createMockConfig() {
       stages: { stt: 200, mcp: 400, tts: 200 },
     },
     session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-    bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+    bargeIn: {
+      enabled: true,
+      minSpeechDuration: 300,
+      confidenceThreshold: 0.7,
+      silenceThreshold: 0.3,
+    },
   };
 }
 
 function createDependencies(): PipelineDependencies {
   return {
     sessionManager: createMockSessionManager() as unknown as PipelineDependencies['sessionManager'],
-    latencyEnforcer: createMockLatencyEnforcer() as unknown as PipelineDependencies['latencyEnforcer'],
+    latencyEnforcer:
+      createMockLatencyEnforcer() as unknown as PipelineDependencies['latencyEnforcer'],
     sttProvider: createMockSTTProvider() as unknown as PipelineDependencies['sttProvider'],
     ttsProvider: createMockTTSProvider() as unknown as PipelineDependencies['ttsProvider'],
     mcpClient: createMockMCPClient() as unknown as PipelineDependencies['mcpClient'],
@@ -202,7 +208,9 @@ describe('Pipeline', () => {
     });
 
     it('should emit error for non-existent session', async () => {
-      (dependencies.sessionManager.getSession as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
+      (dependencies.sessionManager.getSession as ReturnType<typeof vi.fn>).mockReturnValue(
+        undefined
+      );
       const errorHandler = vi.fn();
       pipeline.on('pipeline:error', errorHandler);
 
@@ -302,12 +310,16 @@ describe('Pipeline - Turn Processing', () => {
   });
 
   it('should handle connection errors during startSession', async () => {
-    (dependencies.sttProvider.connect as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Connection failed'));
+    (dependencies.sttProvider.connect as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Connection failed')
+    );
 
     const errorHandler = vi.fn();
     pipeline.on('pipeline:error', errorHandler);
 
-    await expect(pipeline.startSession({ sessionId: 'session-1', status: 'active' })).rejects.toThrow('Connection failed');
+    await expect(
+      pipeline.startSession({ sessionId: 'session-1', status: 'active' })
+    ).rejects.toThrow('Connection failed');
   });
 });
 
@@ -400,7 +412,9 @@ describe('Pipeline - Error Handling', () => {
   it('should clean up activeTurn on MCP error', async () => {
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
-    (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('MCP error'));
+    (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('MCP error')
+    );
 
     const errorHandler = vi.fn();
     pipeline.on('pipeline:error', errorHandler);
@@ -415,7 +429,7 @@ describe('Pipeline - Error Handling', () => {
 
     await pipeline.processAudioChunk('session-1', chunk);
 
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(errorHandler).toHaveBeenCalled();
   });
@@ -423,7 +437,9 @@ describe('Pipeline - Error Handling', () => {
   it('should emit pipeline:error on MCP failure', async () => {
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
-    (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network timeout'));
+    (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Network timeout')
+    );
 
     const errors: any[] = [];
     pipeline.on('pipeline:error', (err: any) => errors.push(err));
@@ -438,7 +454,7 @@ describe('Pipeline - Error Handling', () => {
 
     await pipeline.processAudioChunk('session-1', chunk);
 
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0].data?.stage).toBe('mcp');

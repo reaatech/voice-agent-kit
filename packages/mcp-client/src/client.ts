@@ -1,4 +1,11 @@
-import type { MCPClientConfig, MCPRequestParams, MCPResponse, MCPTool, MCPMessage, MCPResult } from './types.js';
+import type {
+  MCPClientConfig,
+  MCPRequestParams,
+  MCPResponse,
+  MCPTool,
+  MCPMessage,
+  MCPResult,
+} from './types.js';
 
 export class MCPClient {
   private config: MCPClientConfig;
@@ -53,7 +60,9 @@ export class MCPClient {
 
       return this.parseResponse(response, latencyMs);
     } catch (error) {
-      throw new Error(`MCP request failed: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `MCP request failed: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -70,9 +79,10 @@ export class MCPClient {
       const response = await this.sendWithRetry(message);
 
       if (this.isMCPResult(response)) {
-        this.discoveredTools = (response.toolCalls || []).map(tc => ({
+        this.discoveredTools = (response.toolCalls || []).map((tc) => ({
           name: tc.name,
-          description: typeof tc.arguments?.description === 'string' ? tc.arguments.description : '',
+          description:
+            typeof tc.arguments?.description === 'string' ? tc.arguments.description : '',
           inputSchema: tc.arguments as Record<string, unknown>,
         }));
       }
@@ -96,14 +106,14 @@ export class MCPClient {
     try {
       return await this.send(message);
     } catch (error) {
-      const isRetryable = error instanceof Error && (
-        error.message.startsWith('HTTP 5') ||
-        error.message === 'fetch failed' ||
-        error.name === 'AbortError' ||
-        error.name === 'TypeError'
-      );
+      const isRetryable =
+        error instanceof Error &&
+        (error.message.startsWith('HTTP 5') ||
+          error.message === 'fetch failed' ||
+          error.name === 'AbortError' ||
+          error.name === 'TypeError');
       if (isRetryable && attempt < (this.config.retryAttempts ?? 0)) {
-        await new Promise(resolve => setTimeout(resolve, this.config.retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, this.config.retryDelay));
         return await this.sendWithRetry(message, attempt + 1);
       }
       throw error;
@@ -147,7 +157,9 @@ export class MCPClient {
     }
   }
 
-  private truncateHistory(history: Array<{ role: string; content: string }>): Array<{ role: string; content: string }> {
+  private truncateHistory(
+    history: Array<{ role: string; content: string }>
+  ): Array<{ role: string; content: string }> {
     const maxTurns = this.config.maxHistoryTurns || 20;
     return history.slice(-maxTurns);
   }
@@ -155,8 +167,8 @@ export class MCPClient {
   private parseResponse(response: unknown, latencyMs: number): MCPResponse {
     if (this.isMCPResult(response)) {
       const text = response.content
-        .filter(c => c.type === 'text')
-        .map(c => c.text)
+        .filter((c) => c.type === 'text')
+        .map((c) => c.text)
         .join(' ');
 
       return {

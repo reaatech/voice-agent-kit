@@ -33,10 +33,12 @@ describe('TwilioMediaStreamHandler', () => {
 
       handler.acceptConnection(mockWs);
 
-      expect(events[0]).toEqual(expect.objectContaining({
-        callSid: 'CA123',
-        streamSid: 'MS123',
-      }));
+      expect(events[0]).toEqual(
+        expect.objectContaining({
+          callSid: 'CA123',
+          streamSid: 'MS123',
+        })
+      );
     });
 
     it('should parse media message via WebSocket', () => {
@@ -87,9 +89,11 @@ describe('TwilioMediaStreamHandler', () => {
 
       handler.acceptConnection(mockWs);
 
-      expect(endEvents[0]).toEqual(expect.objectContaining({
-        callSid: 'CA123',
-      }));
+      expect(endEvents[0]).toEqual(
+        expect.objectContaining({
+          callSid: 'CA123',
+        })
+      );
     });
 
     it('should parse mark message via WebSocket', () => {
@@ -113,9 +117,11 @@ describe('TwilioMediaStreamHandler', () => {
 
       handler.acceptConnection(mockWs);
 
-      expect(markEvents[0]).toEqual(expect.objectContaining({
-        streamSid: 'MS123',
-      }));
+      expect(markEvents[0]).toEqual(
+        expect.objectContaining({
+          streamSid: 'MS123',
+        })
+      );
     });
   });
 
@@ -209,10 +215,20 @@ describe('TwilioMediaStreamHandler', () => {
       const mockWs = {
         on: vi.fn((event: string, cb: any) => {
           if (event === 'open') cb();
-          if (event === 'message') cb(Buffer.from(JSON.stringify({
-            event: 'start',
-            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-          })));
+          if (event === 'message')
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                })
+              )
+            );
         }),
         off: vi.fn(),
         send: vi.fn(),
@@ -240,10 +256,20 @@ describe('TwilioMediaStreamHandler', () => {
       const mockWs = {
         on: vi.fn((event: string, cb: any) => {
           if (event === 'open') cb();
-          if (event === 'message') cb(Buffer.from(JSON.stringify({
-            event: 'start',
-            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-          })));
+          if (event === 'message')
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                })
+              )
+            );
         }),
         off: vi.fn(),
         send: vi.fn(),
@@ -406,10 +432,20 @@ describe('TwilioMediaStreamHandler', () => {
       const mockWs = {
         on: vi.fn((event: string, cb: any) => {
           if (event === 'open') cb();
-          if (event === 'message') cb(Buffer.from(JSON.stringify({
-            event: 'start',
-            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-          })));
+          if (event === 'message')
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                })
+              )
+            );
         }),
         off: vi.fn(),
         send: vi.fn(),
@@ -435,10 +471,20 @@ describe('TwilioMediaStreamHandler', () => {
       const mockWs = {
         on: vi.fn((event: string, cb: any) => {
           if (event === 'open') cb();
-          if (event === 'message') cb(Buffer.from(JSON.stringify({
-            event: 'start',
-            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-          })));
+          if (event === 'message')
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                })
+              )
+            );
         }),
         off: vi.fn(),
         send: vi.fn(),

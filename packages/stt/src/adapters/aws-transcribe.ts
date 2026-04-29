@@ -20,7 +20,7 @@ export interface AWSTranscribeOptions {
 
 export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   readonly name = 'aws-transcribe';
-  
+
   private client: TranscribeStreamingClient | null = null;
   private connected = false;
   private _config: AWSTranscribeConfig | null = null;
@@ -43,20 +43,22 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
 
   async connect(config: AWSTranscribeConfig): Promise<void> {
     this._config = config;
-    
+
     const apiKey = config.apiKey;
     const region = config.region || this.options.region || 'us-east-1';
-    
+
     if (!apiKey && !process.env.AWS_ACCESS_KEY_ID) {
       throw new Error('AWS credentials are required (API key or AWS_ACCESS_KEY_ID)');
     }
 
     this.client = new TranscribeStreamingClient({
       region,
-      credentials: apiKey ? {
-        accessKeyId: apiKey,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      } : fromIni(),
+      credentials: apiKey
+        ? {
+            accessKeyId: apiKey,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+          }
+        : fromIni(),
     });
 
     try {
@@ -90,7 +92,7 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
     const command = new StartStreamTranscriptionCommand(input as never);
 
     const response = await this.client.send(command);
-    return response.TranscriptResultStream ?? (async function*() {}());
+    return response.TranscriptResultStream ?? (async function* () {})();
   }
 
   streamAudio(chunk: AudioChunk): void {
@@ -132,12 +134,12 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   async close(): Promise<void> {
     this.audioQueue = [];
     this.connected = false;
-    
+
     if (this.client) {
       this.client.destroy();
       this.client = null;
     }
-    
+
     this.transcriptionStream = null;
   }
 
@@ -146,21 +148,28 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   }
 
   private async processTranscriptionStream(): Promise<void> {
-    if (!this.transcriptionStream) {return;}
+    if (!this.transcriptionStream) {
+      return;
+    }
 
     try {
       for await (const event of this.transcriptionStream) {
         const typedEvent = event as { TranscriptResult?: { Transcripts?: unknown[] } };
         if (typedEvent.TranscriptResult) {
           const results = typedEvent.TranscriptResult.Transcripts;
-          
-          if (!results) {continue;}
-          
+
+          if (!results) {
+            continue;
+          }
+
           for (const result of results) {
-            const typedResult = result as { Alternatives?: Array<{ Transcript?: string; Confidence?: number }>; IsPartial?: boolean };
+            const typedResult = result as {
+              Alternatives?: Array<{ Transcript?: string; Confidence?: number }>;
+              IsPartial?: boolean;
+            };
             if (typedResult.Alternatives && typedResult.Alternatives.length > 0) {
               const alternative = typedResult.Alternatives[0];
-              
+
               if (alternative && alternative.Transcript) {
                 const utterance: Utterance = {
                   transcript: alternative.Transcript,
@@ -168,9 +177,9 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
                   isFinal: typedResult.IsPartial === false,
                   timestamp: Date.now(),
                 };
-                
+
                 this.emit('utterance', utterance);
-                
+
                 // Detect end of speech from final results
                 if (typedResult.IsPartial === false) {
                   this.emit('endOfSpeech');
@@ -191,7 +200,7 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   private async *createAudioStream(): AsyncIterable<{ AudioEvent: { AudioChunk: Uint8Array } }> {
     while (this.connected) {
       if (this.audioInputQueue.length === 0) {
-        await new Promise<void>(resolve => {
+        await new Promise<void>((resolve) => {
           this.audioInputResolver = resolve;
         });
       }
@@ -211,7 +220,7 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
     }
 
     // Start processing the transcription stream
-    this.processTranscriptionStream().catch(err => {
+    this.processTranscriptionStream().catch((err) => {
       this.emit('error', err instanceof Error ? err : new Error(String(err)));
     });
   }
@@ -221,12 +230,12 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
       this.emit('error', new Error(`Failed to reconnect after ${this.reconnectCount} attempts`));
       return;
     }
-    
+
     this.reconnectCount++;
     const config = this._config;
-    
+
     setTimeout(() => {
-      this.connect(config).catch(err => {
+      this.connect(config).catch((err) => {
         this.emit('error', err);
       });
     }, this.options.reconnectInterval ?? 1000);

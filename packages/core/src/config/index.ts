@@ -14,25 +14,31 @@ const LatencyBudgetSchema = z.object({
   }),
 });
 
-const STTConfigSchema = z.object({
-  provider: z.string().min(1),
-  apiKey: z.string().optional(),
-  sampleRate: z.number().default(8000),
-}).catchall(z.unknown());
+const STTConfigSchema = z
+  .object({
+    provider: z.string().min(1),
+    apiKey: z.string().optional(),
+    sampleRate: z.number().default(8000),
+  })
+  .catchall(z.unknown());
 
-const TTSConfigSchema = z.object({
-  provider: z.string().min(1),
-  apiKey: z.string().optional(),
-  voice: z.string().optional(),
-  speed: z.number().min(0.25).max(4.0).default(1.0),
-}).catchall(z.unknown());
+const TTSConfigSchema = z
+  .object({
+    provider: z.string().min(1),
+    apiKey: z.string().optional(),
+    voice: z.string().optional(),
+    speed: z.number().min(0.25).max(4.0).default(1.0),
+  })
+  .catchall(z.unknown());
 
 const MCPConfigSchema = z.object({
   endpoint: z.string().url(),
-  auth: z.object({
-    type: z.string().min(1),
-    credentials: z.record(z.string(), z.string()),
-  }).optional(),
+  auth: z
+    .object({
+      type: z.string().min(1),
+      credentials: z.record(z.string(), z.string()),
+    })
+    .optional(),
   timeout: z.number().min(100).max(30000).default(400),
 });
 
@@ -71,10 +77,12 @@ function loadEnvConfig(): Record<string, unknown> {
   if (process.env.MCP_ENDPOINT) {
     envConfig.mcp = {
       endpoint: process.env.MCP_ENDPOINT,
-      auth: process.env.MCP_API_KEY ? {
-        type: 'bearer',
-        credentials: { token: process.env.MCP_API_KEY },
-      } : undefined,
+      auth: process.env.MCP_API_KEY
+        ? {
+            type: 'bearer',
+            credentials: { token: process.env.MCP_API_KEY },
+          }
+        : undefined,
       timeout: process.env.MCP_TIMEOUT ? parseInt(process.env.MCP_TIMEOUT, 10) : 400,
     };
   }
@@ -112,12 +120,12 @@ function loadConfigFile(configPath?: string): Record<string, unknown> {
 
 function parseConfig(rawConfig: Record<string, unknown>): VoiceAgentKitConfig {
   const result = VoiceAgentKitConfigSchema.safeParse(rawConfig);
-  
+
   if (!result.success) {
     const errors = result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Invalid configuration: ${errors}`);
   }
-  
+
   return result.data;
 }
 

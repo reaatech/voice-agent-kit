@@ -21,7 +21,7 @@ export class DeepgramTTSProvider implements TTSProvider {
   readonly name = 'deepgram';
   readonly supportsStreaming = true;
   readonly firstByteLatencyMs: number | null = null;
-  
+
   private options: DeepgramTTSOptions;
   private lastLatency: number | null = null;
   private abortController: AbortController | null = null;
@@ -36,7 +36,7 @@ export class DeepgramTTSProvider implements TTSProvider {
 
   async *synthesize(text: string, config: DeepgramTTSConfig): AsyncIterable<AudioChunk> {
     const apiKey = config.apiKey || process.env.DEEPGRAM_API_KEY;
-    
+
     if (!apiKey) {
       throw new Error('Deepgram API key is required');
     }
@@ -48,7 +48,7 @@ export class DeepgramTTSProvider implements TTSProvider {
     const container = config.container || 'none';
 
     const url = `https://${this.options.apiUrl}/${this.options.version}/speak?model=${model}&voice=${voice}`;
-    
+
     const requestBody: DeepgramTTSRequest = {
       text,
       voice,
@@ -66,7 +66,7 @@ export class DeepgramTTSProvider implements TTSProvider {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${apiKey}`,
+          Authorization: `Token ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
@@ -78,15 +78,17 @@ export class DeepgramTTSProvider implements TTSProvider {
       }
 
       const reader = response.body?.getReader();
-      
+
       if (!reader) {
         throw new Error('No response body');
       }
 
       while (true) {
         const { done, value } = await reader.read();
-        
-        if (done) {break;}
+
+        if (done) {
+          break;
+        }
 
         if (!firstByteReceived) {
           this.lastLatency = performance.now() - startTime;

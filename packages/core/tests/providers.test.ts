@@ -77,7 +77,7 @@ describe('MockSTTProvider', () => {
       expect(utterances.length).toBeGreaterThanOrEqual(2); // At least interim + final
 
       // Check final utterance
-      const finalUtterance = utterances.find(u => u.isFinal);
+      const finalUtterance = utterances.find((u) => u.isFinal);
       expect(finalUtterance).toBeDefined();
       expect(finalUtterance?.transcript).toBe('Hello world');
     });

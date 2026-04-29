@@ -6,7 +6,13 @@
 
 // Provider interface
 export { STTProviderInterface } from './interface.js';
-export type { STTProvider, STTProviderEvents, DeepgramConfig, AWSTranscribeConfig, GoogleCloudSTTConfig } from './interface.js';
+export type {
+  STTProvider,
+  STTProviderEvents,
+  DeepgramConfig,
+  AWSTranscribeConfig,
+  GoogleCloudSTTConfig,
+} from './interface.js';
 
 // Deepgram adapter
 export { DeepgramSTTProvider, createDeepgramSTTProvider } from './adapters/deepgram.js';
@@ -17,7 +23,10 @@ export { AWSTranscribeProvider, createAWSTranscribeProvider } from './adapters/a
 export type { AWSTranscribeOptions } from './adapters/aws-transcribe.js';
 
 // Google Cloud STT adapter
-export { GoogleCloudSTTProvider, createGoogleCloudSTTProvider } from './adapters/google-cloud-stt.js';
+export {
+  GoogleCloudSTTProvider,
+  createGoogleCloudSTTProvider,
+} from './adapters/google-cloud-stt.js';
 export type { GoogleCloudSTTOptions } from './adapters/google-cloud-stt.js';
 
 // Factory

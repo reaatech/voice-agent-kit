@@ -101,7 +101,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       } as unknown as VoiceAgentKitConfig;
 
       expect(() => defineConfig(invalidConfig)).toThrow();
@@ -117,7 +122,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       } as unknown as VoiceAgentKitConfig;
 
       expect(() => defineConfig(invalidConfig)).toThrow();
@@ -149,7 +159,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(validConfig as VoiceAgentKitConfig)).not.toThrow();
@@ -165,7 +180,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();
@@ -181,7 +201,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();
@@ -197,7 +222,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 30, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();
@@ -213,7 +243,12 @@ describe('Config', () => {
           stages: { stt: 20, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();
@@ -229,7 +264,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 1.5, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 1.5,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();
@@ -245,7 +285,12 @@ describe('Config', () => {
           stages: { stt: 200, mcp: 400, tts: 200 },
         },
         session: { ttl: 3600, history: { maxTurns: 200, maxTokens: 4000 } },
-        bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+        bargeIn: {
+          enabled: true,
+          minSpeechDuration: 300,
+          confidenceThreshold: 0.7,
+          silenceThreshold: 0.3,
+        },
       };
 
       expect(() => defineConfig(invalidConfig as VoiceAgentKitConfig)).toThrow();

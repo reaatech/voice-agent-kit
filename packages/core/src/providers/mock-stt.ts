@@ -3,7 +3,6 @@ import { EventEmitter } from 'events';
 import type { STTProvider } from '../pipeline/index.js';
 import type { AudioChunk, Utterance } from '../types/index.js';
 
-
 export interface MockSTTOptions {
   delay?: number;
   transcripts?: string[];
@@ -26,7 +25,11 @@ export class MockSTTProvider extends EventEmitter implements STTProvider {
     super();
     this.options = {
       delay: 100,
-      transcripts: ['Hello, how can I help you today?', "I'd like to book an appointment.", 'What time works for you?'],
+      transcripts: [
+        'Hello, how can I help you today?',
+        "I'd like to book an appointment.",
+        'What time works for you?',
+      ],
       confidence: 0.95,
       interimCount: 2,
       autoEndOfSpeech: true,
@@ -54,15 +57,22 @@ export class MockSTTProvider extends EventEmitter implements STTProvider {
   }
 
   private async processAudio(): Promise<void> {
-    if (!this.utteranceCallback) {return;}
+    if (!this.utteranceCallback) {
+      return;
+    }
 
-    const transcript = this.options.transcripts?.[this.transcriptIndex % (this.options.transcripts?.length ?? 1)] ?? 'Hello';
-    
+    const transcript =
+      this.options.transcripts?.[this.transcriptIndex % (this.options.transcripts?.length ?? 1)] ??
+      'Hello';
+
     // Send interim results
     const interimCount = this.options.interimCount ?? 2;
     for (let i = 1; i <= interimCount; i++) {
-      const partialText = transcript.substring(0, Math.floor((transcript.length / interimCount) * i));
-      
+      const partialText = transcript.substring(
+        0,
+        Math.floor((transcript.length / interimCount) * i)
+      );
+
       this.utteranceCallback({
         transcript: partialText,
         confidence: (this.options.confidence ?? 0.9) * (i / interimCount),
@@ -70,7 +80,7 @@ export class MockSTTProvider extends EventEmitter implements STTProvider {
         timestamp: Date.now(),
       });
 
-      await new Promise(resolve => setTimeout(resolve, this.options.delay));
+      await new Promise((resolve) => setTimeout(resolve, this.options.delay));
     }
 
     // Send final result

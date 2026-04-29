@@ -57,30 +57,37 @@ export interface STTProvider {
 
 export class STTProviderInterface {
   static validateAudioChunk(chunk: AudioChunk): boolean {
-    return Buffer.isBuffer(chunk.buffer) && 
-           chunk.buffer.length > 0 && 
-           typeof chunk.sampleRate === 'number' && 
-           chunk.sampleRate > 0;
+    return (
+      Buffer.isBuffer(chunk.buffer) &&
+      chunk.buffer.length > 0 &&
+      typeof chunk.sampleRate === 'number' &&
+      chunk.sampleRate > 0
+    );
   }
 
   static convertAudioFormat(
-    chunk: AudioChunk, 
-    targetSampleRate: number, 
+    chunk: AudioChunk,
+    targetSampleRate: number,
     targetEncoding: 'mulaw' | 'linear16' | 'pcm'
   ): AudioChunk {
     let convertedBuffer = chunk.buffer;
-    
+
     if (chunk.encoding === 'mulaw' && targetEncoding === 'linear16') {
       convertedBuffer = this.mulawToLinear16(chunk.buffer);
     } else if (chunk.encoding === 'linear16' && targetEncoding === 'mulaw') {
       convertedBuffer = this.linear16ToMulaw(chunk.buffer);
     }
-    
+
     if (chunk.sampleRate !== targetSampleRate) {
       const bytesPerSample = targetEncoding === 'mulaw' ? 1 : 2;
-      convertedBuffer = this.resample(convertedBuffer, chunk.sampleRate, targetSampleRate, bytesPerSample);
+      convertedBuffer = this.resample(
+        convertedBuffer,
+        chunk.sampleRate,
+        targetSampleRate,
+        bytesPerSample
+      );
     }
-    
+
     return {
       ...chunk,
       buffer: convertedBuffer,
@@ -93,11 +100,13 @@ export class STTProviderInterface {
     const linearBuffer = Buffer.alloc(mulawBuffer.length * 2);
     for (let i = 0; i < mulawBuffer.length; i++) {
       const byte = mulawBuffer[i];
-      if (byte === undefined) {continue;}
+      if (byte === undefined) {
+        continue;
+      }
       const ulaw = ~byte;
       let t = ((ulaw & 0x0f) << 4) + 0x84;
       t <<= ((ulaw & 0x70) >> 4) + 1;
-      const sample = (ulaw & 0x80) ? (0x84 - t) : (t - 0x84);
+      const sample = ulaw & 0x80 ? 0x84 - t : t - 0x84;
       linearBuffer.writeInt16LE(sample, i * 2);
     }
     return linearBuffer;
@@ -107,26 +116,35 @@ export class STTProviderInterface {
     const mulawBuffer = Buffer.alloc(linearBuffer.length / 2);
     for (let i = 0; i < mulawBuffer.length; i++) {
       let sample = linearBuffer.readInt16LE(i * 2);
-      const sign = (sample < 0) ? 1 : 0;
+      const sign = sample < 0 ? 1 : 0;
       sample = Math.abs(sample);
-      
-      if (sample > 8159) {sample = 8159;}
+
+      if (sample > 8159) {
+        sample = 8159;
+      }
       sample += 132;
-      
+
       let exponent = 0;
       while (sample > 255) {
         sample >>= 1;
         exponent++;
       }
-      
+
       const mantissa = (sample >> 4) & 0x0f;
-      mulawBuffer[i] = ~(sign << 7 | exponent << 4 | mantissa);
+      mulawBuffer[i] = ~((sign << 7) | (exponent << 4) | mantissa);
     }
     return mulawBuffer;
   }
 
-  private static resample(buffer: Buffer, fromRate: number, toRate: number, bytesPerSample: number): Buffer {
-    if (fromRate === toRate) {return buffer;}
+  private static resample(
+    buffer: Buffer,
+    fromRate: number,
+    toRate: number,
+    bytesPerSample: number
+  ): Buffer {
+    if (fromRate === toRate) {
+      return buffer;
+    }
 
     const ratio = fromRate / toRate;
     const srcSamples = Math.floor(buffer.length / bytesPerSample);
@@ -136,7 +154,12 @@ export class STTProviderInterface {
     for (let i = 0; i < newSamples; i++) {
       const srcIndex = Math.floor(i * ratio);
       if (srcIndex < srcSamples) {
-        buffer.copy(newBuffer, i * bytesPerSample, srcIndex * bytesPerSample, srcIndex * bytesPerSample + bytesPerSample);
+        buffer.copy(
+          newBuffer,
+          i * bytesPerSample,
+          srcIndex * bytesPerSample,
+          srcIndex * bytesPerSample + bytesPerSample
+        );
       }
     }
 

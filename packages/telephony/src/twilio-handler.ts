@@ -3,9 +3,15 @@ import { EventEmitter } from 'events';
 import type { AudioChunk } from '@voice-agent-kit/core';
 import WebSocket from 'ws';
 
-
-import type { TwilioMessage, TwilioOutboundMessage, TwilioStartMessage, TwilioMediaMessage, TwilioStopMessage, TwilioDTMFMessage, TwilioMarkMessage } from './types.js';
-
+import type {
+  TwilioMessage,
+  TwilioOutboundMessage,
+  TwilioStartMessage,
+  TwilioMediaMessage,
+  TwilioStopMessage,
+  TwilioDTMFMessage,
+  TwilioMarkMessage,
+} from './types.js';
 
 export interface TwilioHandlerConfig {
   bargeInEnabled: boolean;
@@ -62,7 +68,11 @@ export class TwilioMediaStreamHandler extends EventEmitter {
       });
 
       ws.on('message', (data: Buffer | ArrayBuffer | Buffer[]) => {
-        const buffer = Buffer.isBuffer(data) ? data : Array.isArray(data) ? Buffer.concat(data) : Buffer.from(data);
+        const buffer = Buffer.isBuffer(data)
+          ? data
+          : Array.isArray(data)
+            ? Buffer.concat(data)
+            : Buffer.from(data);
         this.handleMessage(buffer);
       });
 
@@ -151,7 +161,11 @@ export class TwilioMediaStreamHandler extends EventEmitter {
     return this.bargeInEnabled;
   }
 
-  getBargeInThresholds(): { minSpeechDuration: number; confidenceThreshold: number; silenceThreshold: number } {
+  getBargeInThresholds(): {
+    minSpeechDuration: number;
+    confidenceThreshold: number;
+    silenceThreshold: number;
+  } {
     return {
       minSpeechDuration: this.minSpeechDuration,
       confidenceThreshold: this.confidenceThreshold,

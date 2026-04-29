@@ -16,7 +16,7 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
   readonly name = 'aws-polly';
   readonly supportsStreaming = true;
   readonly firstByteLatencyMs: number | null = null;
-  
+
   private client: PollyClient | null = null;
   private connected = false;
   private _config: AWSPollyConfig | null = null;
@@ -35,20 +35,22 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
 
   async connect(config: AWSPollyConfig): Promise<void> {
     this._config = config;
-    
+
     const apiKey = config.apiKey;
     const region = config.region || this.options.region || 'us-east-1';
-    
+
     if (!apiKey && !process.env.AWS_ACCESS_KEY_ID) {
       throw new Error('AWS credentials are required (API key or AWS_ACCESS_KEY_ID)');
     }
 
     this.client = new PollyClient({
       region,
-      credentials: apiKey ? {
-        accessKeyId: apiKey,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      } : fromIni(),
+      credentials: apiKey
+        ? {
+            accessKeyId: apiKey,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+          }
+        : fromIni(),
     });
 
     this.connected = true;
@@ -66,10 +68,12 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
       const region = this._config.region || this.options.region || 'us-east-1';
       this.client = new PollyClient({
         region,
-        credentials: apiKey ? {
-          accessKeyId: apiKey,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-        } : fromIni(),
+        credentials: apiKey
+          ? {
+              accessKeyId: apiKey,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+            }
+          : fromIni(),
       });
     }
 
@@ -102,7 +106,9 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
 
       if (response.AudioStream) {
         for await (const chunk of response.AudioStream as AsyncIterable<Uint8Array>) {
-          if (this.isCancelled) {break;}
+          if (this.isCancelled) {
+            break;
+          }
           const audioChunk: AudioChunk = {
             buffer: Buffer.from(chunk),
             sampleRate: sampleRate,
@@ -132,7 +138,7 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
   async close(): Promise<void> {
     this.cancel();
     this.connected = false;
-    
+
     if (this.client) {
       this.client.destroy();
       this.client = null;

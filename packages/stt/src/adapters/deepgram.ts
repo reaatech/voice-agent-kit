@@ -49,7 +49,7 @@ export class DeepgramSTTProvider extends EventEmitter implements STTProvider {
   async connect(config: DeepgramConfig): Promise<void> {
     this._config = config;
     const apiKey = config.apiKey || process.env.DEEPGRAM_API_KEY;
-    
+
     if (!apiKey) {
       throw new Error('Deepgram API key is required');
     }
@@ -73,7 +73,7 @@ export class DeepgramSTTProvider extends EventEmitter implements STTProvider {
       try {
         this.ws = new WebSocket(url, {
           headers: {
-            'Authorization': `Token ${apiKey}`,
+            Authorization: `Token ${apiKey}`,
           },
         });
 
@@ -136,13 +136,13 @@ export class DeepgramSTTProvider extends EventEmitter implements STTProvider {
 
   async close(): Promise<void> {
     this.audioQueue = [];
-    
+
     if (this.ws) {
       this.ws.removeAllListeners();
       this.ws.close();
       this.ws = null;
     }
-    
+
     this.connected = false;
   }
 
@@ -153,10 +153,10 @@ export class DeepgramSTTProvider extends EventEmitter implements STTProvider {
   private handleMessage(data: Buffer): void {
     try {
       const response: DeepgramResponse = JSON.parse(data.toString());
-      
+
       if (response.channel?.alternatives?.[0]) {
         const alternative = response.channel.alternatives[0];
-        
+
         if (alternative.transcript) {
           const utterance: Utterance = {
             transcript: alternative.transcript,
@@ -164,7 +164,7 @@ export class DeepgramSTTProvider extends EventEmitter implements STTProvider {
             isFinal: response.is_final,
             timestamp: Date.now(),
           };
-          
+
           this.emit('utterance', utterance);
         }
       }

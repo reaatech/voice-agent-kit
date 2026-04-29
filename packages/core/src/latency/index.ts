@@ -35,12 +35,12 @@ export class LatencyBudgetEnforcer extends EventEmitter {
 
   startStage(turnId: string, stage: string): void {
     const turnTimings = this.turnTimings.get(turnId);
-    
+
     if (!turnTimings) {
       this.emit('warning', { turnId, message: `No turn timing found for turn ${turnId}` });
       return;
     }
-    
+
     turnTimings.set(stage, {
       stage,
       startTime: performance.now(),
@@ -49,63 +49,64 @@ export class LatencyBudgetEnforcer extends EventEmitter {
 
   endStage(turnId: string, stage: string): number {
     const turnTimings = this.turnTimings.get(turnId);
-    
+
     if (!turnTimings) {
       return 0;
     }
-    
+
     const timing = turnTimings.get(stage);
-    
+
     if (!timing) {
       return 0;
     }
-    
+
     const endTime = performance.now();
     const duration = endTime - timing.startTime;
-    
+
     timing.endTime = endTime;
     timing.duration = duration;
-    
+
     return duration;
   }
 
   endTurn(turnId: string): LatencyMetrics {
     const turnStartTime = this.turnStartTimes.get(turnId);
     const turnTimings = this.turnTimings.get(turnId);
-    
+
     if (!turnStartTime || !turnTimings) {
       return this.createEmptyMetrics();
     }
-    
+
     const sttTiming = turnTimings.get('stt');
     const mcpTiming = turnTimings.get('mcp');
     const ttsTiming = turnTimings.get('tts');
-    
+
     const sttLatencyMs = sttTiming?.duration ?? 0;
     const mcpLatencyMs = mcpTiming?.duration ?? 0;
     const ttsFirstByteMs = ttsTiming?.duration ?? 0;
     const totalTurnLatencyMs = performance.now() - turnStartTime;
-    
+
     const exceededStages: string[] = [];
-    
+
     if (sttLatencyMs > this.budget.stages.stt) {
       exceededStages.push('stt');
     }
-    
+
     if (mcpLatencyMs > this.budget.stages.mcp) {
       exceededStages.push('mcp');
     }
-    
+
     if (ttsFirstByteMs > this.budget.stages.tts) {
       exceededStages.push('tts');
     }
-    
-    const budgetExceeded = exceededStages.length > 0 || totalTurnLatencyMs > this.budget.total.hardCap;
-    
+
+    const budgetExceeded =
+      exceededStages.length > 0 || totalTurnLatencyMs > this.budget.total.hardCap;
+
     // Clean up
     this.turnTimings.delete(turnId);
     this.turnStartTimes.delete(turnId);
-    
+
     const metrics: LatencyMetrics = {
       sttLatencyMs,
       mcpLatencyMs,
@@ -114,13 +115,13 @@ export class LatencyBudgetEnforcer extends EventEmitter {
       budgetExceeded,
       exceededStages,
     };
-    
+
     if (budgetExceeded) {
       this.emit('budget:exceeded', { turnId, metrics, budget: this.budget });
     }
-    
+
     this.emit('turn:complete', { turnId, metrics });
-    
+
     return metrics;
   }
 
@@ -136,14 +137,17 @@ export class LatencyBudgetEnforcer extends EventEmitter {
     return this.budget.total.hardCap;
   }
 
-  checkStageBudget(stage: 'stt' | 'mcp' | 'tts', elapsedMs: number): {
+  checkStageBudget(
+    stage: 'stt' | 'mcp' | 'tts',
+    elapsedMs: number
+  ): {
     withinBudget: boolean;
     remainingMs: number;
     exceeded: boolean;
   } {
     const budget = this.budget.stages[stage];
     const remaining = budget - elapsedMs;
-    
+
     return {
       withinBudget: remaining >= 0,
       remainingMs: Math.max(0, remaining),
@@ -159,7 +163,7 @@ export class LatencyBudgetEnforcer extends EventEmitter {
   } {
     const targetRemaining = this.budget.total.target - elapsedMs;
     const hardCapRemaining = this.budget.total.hardCap - elapsedMs;
-    
+
     return {
       withinTarget: targetRemaining >= 0,
       withinHardCap: hardCapRemaining >= 0,
@@ -218,7 +222,7 @@ export class PerformanceMonitor {
 
   record(latencyMs: number): void {
     this.samples.push(latencyMs);
-    
+
     if (this.samples.length > this.maxSamples) {
       this.samples.shift();
     }
@@ -246,10 +250,10 @@ export class PerformanceMonitor {
         p99: 0,
       };
     }
-    
+
     const sorted = [...this.samples].sort((a, b) => a - b);
     const sum = sorted.reduce((a, b) => a + b, 0);
-    
+
     return {
       count: sorted.length,
       min: sorted[0] ?? 0,

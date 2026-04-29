@@ -1,6 +1,6 @@
 /**
  * @voice-agent-kit/core
- * 
+ *
  * Core pipeline, session management, latency budget, and configuration for voice AI agents.
  */
 
@@ -8,10 +8,19 @@
 export * from './types/index.js';
 
 // Config
-export { loadConfig, defineConfig, getDefaultConfig, VoiceAgentKitConfigSchema } from './config/index.js';
+export {
+  loadConfig,
+  defineConfig,
+  getDefaultConfig,
+  VoiceAgentKitConfigSchema,
+} from './config/index.js';
 
 // Session
-export { SessionManager, getDefaultSessionManager, initializeSessionManager } from './session/index.js';
+export {
+  SessionManager,
+  getDefaultSessionManager,
+  initializeSessionManager,
+} from './session/index.js';
 export type { SessionManagerOptions } from './session/index.js';
 
 // Latency
@@ -36,11 +45,7 @@ export {
   createMockTTSProvider,
   createMockMCPClient,
 } from './providers/index.js';
-export type {
-  MockSTTOptions,
-  MockTTSOptions,
-  MockMCPClientOptions,
-} from './providers/index.js';
+export type { MockSTTOptions, MockTTSOptions, MockMCPClientOptions } from './providers/index.js';
 
 // Observability
 export {
@@ -52,8 +57,5 @@ export {
 export type { ObservabilityConfig, SpanAttributes } from './observability/index.js';
 
 // Observability exporter utilities
-export {
-  DEFAULT_TELEMETRY_CONFIG,
-  getOtelEnvVars,
-} from './observability/exporter.js';
+export { DEFAULT_TELEMETRY_CONFIG, getOtelEnvVars } from './observability/exporter.js';
 export type { ExporterConfig, TelemetryConfig } from './observability/exporter.js';

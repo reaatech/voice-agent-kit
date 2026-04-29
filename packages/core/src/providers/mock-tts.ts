@@ -33,14 +33,16 @@ export class MockTTSProvider implements TTSProvider {
     const startTime = performance.now();
     this.cancelled = false;
 
-    await new Promise(resolve => setTimeout(resolve, this.options.firstByteDelay));
+    await new Promise((resolve) => setTimeout(resolve, this.options.firstByteDelay));
 
     this.lastBenchmarkTime = performance.now() - startTime;
 
     const chunkCount = Math.max(1, Math.ceil(text.length / 10));
 
     for (let i = 0; i < chunkCount; i++) {
-      if (this.cancelled) {return;}
+      if (this.cancelled) {
+        return;
+      }
 
       const buffer = Buffer.alloc(this.options.chunkSize ?? 320, 0x7f);
 
@@ -55,7 +57,7 @@ export class MockTTSProvider implements TTSProvider {
       yield chunk;
 
       if (i < chunkCount - 1) {
-        await new Promise(resolve => setTimeout(resolve, this.options.delay));
+        await new Promise((resolve) => setTimeout(resolve, this.options.delay));
       }
     }
   }

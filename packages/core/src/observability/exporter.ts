@@ -30,8 +30,10 @@ export function getOtelEnvVars(): Record<string, string> {
     OTEL_SERVICE_NAME: process.env.OTEL_SERVICE_NAME || 'voice-agent-kit',
     OTEL_SERVICE_VERSION: process.env.OTEL_SERVICE_VERSION || '0.1.0',
     OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318',
-    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://localhost:4318/v1/traces',
-    OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://localhost:4318/v1/metrics',
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:
+      process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || 'http://localhost:4318/v1/traces',
+    OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:
+      process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || 'http://localhost:4318/v1/metrics',
     OTEL_TRACES_EXPORTER: process.env.OTEL_TRACES_EXPORTER || 'otlp',
     OTEL_METRICS_EXPORTER: process.env.OTEL_METRICS_EXPORTER || 'otlp',
     OTEL_LOG_LEVEL: process.env.OTEL_LOG_LEVEL || 'info',

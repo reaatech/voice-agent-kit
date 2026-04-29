@@ -139,18 +139,18 @@ describe('MCPClient', () => {
   describe('Session Management', () => {
     it('should handle different session IDs', async () => {
       await client.connect();
-      
+
       // Should accept different session IDs
       expect(typeof client.sendRequest).toBe('function');
-      
+
       await client.close();
     });
 
     it('should handle different turn IDs', async () => {
       await client.connect();
-      
+
       expect(typeof client.sendRequest).toBe('function');
-      
+
       await client.close();
     });
   });

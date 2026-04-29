@@ -76,11 +76,7 @@ class Observability {
     this.initialized = true;
   }
 
-  startSpan(
-    name: string,
-    attributes?: SpanAttributes,
-    kind: SpanKind = SK.INTERNAL
-  ): Span | null {
+  startSpan(name: string, attributes?: SpanAttributes, kind: SpanKind = SK.INTERNAL): Span | null {
     if (!this.config.enabled) {
       return null;
     }
@@ -120,7 +116,11 @@ class Observability {
     }
   }
 
-  withSpan<T>(name: string, fn: (span: Span | null) => Promise<T>, attributes?: SpanAttributes): Promise<T> {
+  withSpan<T>(
+    name: string,
+    fn: (span: Span | null) => Promise<T>,
+    attributes?: SpanAttributes
+  ): Promise<T> {
     const span = this.startSpan(name, attributes);
 
     return (async () => {
@@ -154,7 +154,15 @@ class Observability {
     budgetExceeded: boolean;
     exceededStages: string[];
   }): void {
-    const { sessionId, sttLatencyMs, mcpLatencyMs, ttsFirstByteMs, totalLatencyMs, budgetExceeded, exceededStages } = params;
+    const {
+      sessionId,
+      sttLatencyMs,
+      mcpLatencyMs,
+      ttsFirstByteMs,
+      totalLatencyMs,
+      budgetExceeded,
+      exceededStages,
+    } = params;
 
     this.voiceTurnDuration.record(totalLatencyMs, { session_id: sessionId });
     this.sttLatency.record(sttLatencyMs, { session_id: sessionId });

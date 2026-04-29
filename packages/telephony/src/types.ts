@@ -47,7 +47,12 @@ export interface TwilioDTMFMessage {
   };
 }
 
-export type TwilioMessage = TwilioStartMessage | TwilioMediaMessage | TwilioStopMessage | TwilioMarkMessage | TwilioDTMFMessage;
+export type TwilioMessage =
+  | TwilioStartMessage
+  | TwilioMediaMessage
+  | TwilioStopMessage
+  | TwilioMarkMessage
+  | TwilioDTMFMessage;
 
 export interface TwilioOutboundMessage {
   event: 'media' | 'clear' | 'mark' | 'start';

@@ -6,7 +6,12 @@
 
 // Provider interface
 export { TTSProviderInterface } from './interface.js';
-export type { TTSProvider, DeepgramTTSConfig, AWSPollyConfig, GoogleCloudTTSConfig } from './interface.js';
+export type {
+  TTSProvider,
+  DeepgramTTSConfig,
+  AWSPollyConfig,
+  GoogleCloudTTSConfig,
+} from './interface.js';
 
 // Deepgram adapter
 export { DeepgramTTSProvider, createDeepgramTTSProvider } from './adapters/deepgram.js';
@@ -17,7 +22,10 @@ export { AWSPollyProvider, createAWSPollyProvider } from './adapters/aws-polly.j
 export type { AWSPollyOptions } from './adapters/aws-polly.js';
 
 // Google Cloud TTS adapter
-export { GoogleCloudTTSProvider, createGoogleCloudTTSProvider } from './adapters/google-cloud-tts.js';
+export {
+  GoogleCloudTTSProvider,
+  createGoogleCloudTTSProvider,
+} from './adapters/google-cloud-tts.js';
 export type { GoogleCloudTTSOptions } from './adapters/google-cloud-tts.js';
 
 // Factory
