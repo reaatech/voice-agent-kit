@@ -1,16 +1,16 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
-import type { AudioChunk } from '@voice-agent-kit/core';
+import type { AudioChunk } from '@reaatech/voice-agent-core';
 import WebSocket from 'ws';
 
 import type {
+  TwilioDTMFMessage,
+  TwilioMarkMessage,
+  TwilioMediaMessage,
   TwilioMessage,
   TwilioOutboundMessage,
   TwilioStartMessage,
-  TwilioMediaMessage,
   TwilioStopMessage,
-  TwilioDTMFMessage,
-  TwilioMarkMessage,
 } from './types.js';
 
 export interface TwilioHandlerConfig {

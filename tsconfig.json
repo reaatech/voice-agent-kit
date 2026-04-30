@@ -3,6 +3,10 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -15,33 +19,12 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "pretty": true,
-    "lib": ["ES2022"],
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@voice-agent-kit/core": ["packages/core/src/index.ts"],
-      "@voice-agent-kit/stt": ["packages/stt/src/index.ts"],
-      "@voice-agent-kit/tts": ["packages/tts/src/index.ts"],
-      "@voice-agent-kit/telephony": ["packages/telephony/src/index.ts"],
-      "@voice-agent-kit/mcp-client": ["packages/mcp-client/src/index.ts"]
-    }
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
   },
-  "include": [
-    "packages/**/src/**/*.ts",
-    "examples/**/src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/dist/**",
-    "**/coverage/**"
-  ]
+  "exclude": ["node_modules", "dist", "*.config.js"]
 }

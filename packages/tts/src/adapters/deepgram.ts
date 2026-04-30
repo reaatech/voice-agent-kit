@@ -1,6 +1,6 @@
-import type { AudioChunk } from '@voice-agent-kit/core';
+import type { AudioChunk } from '@reaatech/voice-agent-core';
 
-import type { TTSProvider, DeepgramTTSConfig } from '../interface.js';
+import type { DeepgramTTSConfig, TTSProvider } from '../interface.js';
 import { TTSProviderInterface } from '../interface.js';
 
 export interface DeepgramTTSOptions {

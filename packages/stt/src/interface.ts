@@ -1,4 +1,4 @@
-import type { AudioChunk, Utterance, STTConfig } from '@voice-agent-kit/core';
+import type { AudioChunk, STTConfig, Utterance } from '@reaatech/voice-agent-core';
 
 export interface STTProviderEvents {
   utterance: (utterance: Utterance) => void;
@@ -55,6 +55,7 @@ export interface STTProvider {
   isConnected(): boolean;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: utility class providing format conversion helpers
 export class STTProviderInterface {
   static validateAudioChunk(chunk: AudioChunk): boolean {
     return (
@@ -68,23 +69,23 @@ export class STTProviderInterface {
   static convertAudioFormat(
     chunk: AudioChunk,
     targetSampleRate: number,
-    targetEncoding: 'mulaw' | 'linear16' | 'pcm'
+    targetEncoding: 'mulaw' | 'linear16' | 'pcm',
   ): AudioChunk {
     let convertedBuffer = chunk.buffer;
 
     if (chunk.encoding === 'mulaw' && targetEncoding === 'linear16') {
-      convertedBuffer = this.mulawToLinear16(chunk.buffer);
+      convertedBuffer = STTProviderInterface.mulawToLinear16(chunk.buffer);
     } else if (chunk.encoding === 'linear16' && targetEncoding === 'mulaw') {
-      convertedBuffer = this.linear16ToMulaw(chunk.buffer);
+      convertedBuffer = STTProviderInterface.linear16ToMulaw(chunk.buffer);
     }
 
     if (chunk.sampleRate !== targetSampleRate) {
       const bytesPerSample = targetEncoding === 'mulaw' ? 1 : 2;
-      convertedBuffer = this.resample(
+      convertedBuffer = STTProviderInterface.resample(
         convertedBuffer,
         chunk.sampleRate,
         targetSampleRate,
-        bytesPerSample
+        bytesPerSample,
       );
     }
 
@@ -140,7 +141,7 @@ export class STTProviderInterface {
     buffer: Buffer,
     fromRate: number,
     toRate: number,
-    bytesPerSample: number
+    bytesPerSample: number,
   ): Buffer {
     if (fromRate === toRate) {
       return buffer;
@@ -158,7 +159,7 @@ export class STTProviderInterface {
           newBuffer,
           i * bytesPerSample,
           srcIndex * bytesPerSample,
-          srcIndex * bytesPerSample + bytesPerSample
+          srcIndex * bytesPerSample + bytesPerSample,
         );
       }
     }

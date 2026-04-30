@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
-import type { AudioChunk, Utterance } from '@voice-agent-kit/core';
+import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 import WebSocket from 'ws';
 
-import type { STTProvider, DeepgramConfig } from '../interface.js';
+import type { DeepgramConfig, STTProvider } from '../interface.js';
 import { STTProviderInterface } from '../interface.js';
 
 export interface DeepgramSTTOptions {

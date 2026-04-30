@@ -1,5 +1,5 @@
 /**
- * @voice-agent-kit/telephony
+ * @reaatech/voice-agent-telephony
  *
  * Twilio Media Streams adapter for voice AI agents.
  */

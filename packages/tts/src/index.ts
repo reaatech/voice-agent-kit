@@ -1,5 +1,5 @@
 /**
- * @voice-agent-kit/tts
+ * @reaatech/voice-agent-tts
  *
  * Text-to-speech provider interface and adapters for voice AI agents.
  */

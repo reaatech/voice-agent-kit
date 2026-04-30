@@ -28,7 +28,7 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
    ```typescript
    import type { STTProvider, STTConfig } from '../interface.js';
-   import type { AudioChunk, Utterance } from '@voice-agent-kit/core';
+   import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 
    export class YourSTTProvider implements STTProvider {
      readonly name = 'your-provider';
@@ -93,7 +93,7 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
    ```typescript
    import type { TTSProvider, TTSConfig } from '../interface.js';
-   import type { AudioChunk } from '@voice-agent-kit/core';
+   import type { AudioChunk } from '@reaatech/voice-agent-core';
 
    export class YourTTSProvider implements TTSProvider {
      readonly name = 'your-provider';

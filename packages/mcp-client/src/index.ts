@@ -1,5 +1,5 @@
 /**
- * @voice-agent-kit/mcp-client
+ * @reaatech/voice-agent-mcp-client
  *
  * MCP client for connecting to any MCP server endpoint.
  */

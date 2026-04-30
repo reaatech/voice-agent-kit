@@ -23,7 +23,7 @@ The agent mesh can:
 Create a `voice-agent-kit.config.ts` in this directory:
 
 ```typescript
-import { defineConfig } from '@voice-agent-kit/core';
+import { defineConfig } from '@reaatech/voice-agent-core';
 
 export default defineConfig({
   stt: {

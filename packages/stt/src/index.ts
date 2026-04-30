@@ -1,5 +1,5 @@
 /**
- * @voice-agent-kit/stt
+ * @reaatech/voice-agent-stt
  *
  * Speech-to-text provider interface and adapters for voice AI agents.
  */

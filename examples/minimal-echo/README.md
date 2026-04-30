@@ -20,7 +20,7 @@ Verify the complete voice pipeline:
 Create a `voice-agent-kit.config.ts`:
 
 ```typescript
-import { defineConfig } from '@voice-agent-kit/core';
+import { defineConfig } from '@reaatech/voice-agent-core';
 
 export default defineConfig({
   stt: {

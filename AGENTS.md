@@ -145,7 +145,7 @@ pnpm test
 pnpm test:coverage
 
 # Specific package
-pnpm --filter @voice-agent-kit/core test
+pnpm --filter @reaatech/voice-agent-core test
 ```
 
 ## Configuration
@@ -153,7 +153,7 @@ pnpm --filter @voice-agent-kit/core test
 Configuration is loaded from `voice-agent-kit.config.ts` with environment variable overrides:
 
 ```typescript
-import { defineConfig } from '@voice-agent-kit/core';
+import { defineConfig } from '@reaatech/voice-agent-core';
 
 export default defineConfig({
   stt: { provider: 'deepgram', model: 'nova-2' },

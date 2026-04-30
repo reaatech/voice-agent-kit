@@ -1,15 +1,15 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 import {
-  TranscribeStreamingClient,
-  StartStreamTranscriptionCommand,
+  type LanguageCode,
   MediaEncoding,
-  LanguageCode,
+  StartStreamTranscriptionCommand,
+  TranscribeStreamingClient,
 } from '@aws-sdk/client-transcribe-streaming';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-import type { AudioChunk, Utterance } from '@voice-agent-kit/core';
+import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 
-import type { STTProvider, AWSTranscribeConfig } from '../interface.js';
+import type { AWSTranscribeConfig, STTProvider } from '../interface.js';
 import { STTProviderInterface } from '../interface.js';
 
 export interface AWSTranscribeOptions {
@@ -170,7 +170,7 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
             if (typedResult.Alternatives && typedResult.Alternatives.length > 0) {
               const alternative = typedResult.Alternatives[0];
 
-              if (alternative && alternative.Transcript) {
+              if (alternative?.Transcript) {
                 const utterance: Utterance = {
                   transcript: alternative.Transcript,
                   confidence: alternative.Confidence ?? 0.9,

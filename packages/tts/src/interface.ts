@@ -1,4 +1,4 @@
-import type { AudioChunk, TTSConfig } from '@voice-agent-kit/core';
+import type { AudioChunk, TTSConfig } from '@reaatech/voice-agent-core';
 
 export interface DeepgramTTSConfig extends TTSConfig {
   model?: 'aura';
@@ -33,7 +33,7 @@ export interface TTSProvider {
   readonly name: string;
   synthesize(
     text: string,
-    config: DeepgramTTSConfig | AWSPollyConfig | GoogleCloudTTSConfig
+    config: DeepgramTTSConfig | AWSPollyConfig | GoogleCloudTTSConfig,
   ): AsyncIterable<AudioChunk>;
   readonly supportsStreaming: boolean;
   readonly firstByteLatencyMs: number | null;
@@ -41,6 +41,7 @@ export interface TTSProvider {
   connect?(config: unknown): Promise<void>;
 }
 
+// biome-ignore lint/complexity/noStaticOnlyClass: utility class providing TTS format helpers
 export class TTSProviderInterface {
   static formatAudioForTwilio(chunk: AudioChunk): AudioChunk {
     if (chunk.encoding === 'mulaw' && chunk.sampleRate === 8000) {
@@ -50,11 +51,11 @@ export class TTSProviderInterface {
     let buffer = chunk.buffer;
 
     if (chunk.encoding !== 'mulaw') {
-      buffer = this.convertToMulaw(buffer, chunk.encoding, chunk.sampleRate);
+      buffer = TTSProviderInterface.convertToMulaw(buffer, chunk.encoding, chunk.sampleRate);
     }
 
     if (chunk.sampleRate !== 8000) {
-      buffer = this.resampleTo8kHz(buffer, chunk.sampleRate);
+      buffer = TTSProviderInterface.resampleTo8kHz(buffer, chunk.sampleRate);
     }
 
     return {
@@ -65,7 +66,7 @@ export class TTSProviderInterface {
     };
   }
 
-  static createSilenceChunk(durationMs: number, sampleRate: number = 8000): AudioChunk {
+  static createSilenceChunk(durationMs: number, sampleRate = 8000): AudioChunk {
     const bytesPerSample = 1;
     const bufferSize = Math.ceil((sampleRate / 1000) * durationMs * bytesPerSample);
 
@@ -78,7 +79,7 @@ export class TTSProviderInterface {
     };
   }
 
-  static chunkTextForStreaming(text: string, maxChunkSize: number = 200): string[] {
+  static chunkTextForStreaming(text: string, maxChunkSize = 200): string[] {
     const chunks: string[] = [];
     let currentChunk = '';
 
@@ -89,7 +90,7 @@ export class TTSProviderInterface {
         chunks.push(currentChunk.trim());
         currentChunk = sentence;
       } else {
-        currentChunk += ' ' + sentence;
+        currentChunk += ` ${sentence}`;
       }
     }
 
@@ -128,11 +129,7 @@ export class TTSProviderInterface {
     return buffer;
   }
 
-  private static resampleTo8kHz(
-    buffer: Buffer,
-    fromRate: number,
-    bytesPerSample: number = 1
-  ): Buffer {
+  private static resampleTo8kHz(buffer: Buffer, fromRate: number, bytesPerSample = 1): Buffer {
     if (fromRate === 8000) {
       return buffer;
     }
@@ -149,7 +146,7 @@ export class TTSProviderInterface {
           newBuffer,
           i * bytesPerSample,
           srcIndex * bytesPerSample,
-          srcIndex * bytesPerSample + bytesPerSample
+          srcIndex * bytesPerSample + bytesPerSample,
         );
       }
     }

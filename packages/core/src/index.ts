@@ -1,5 +1,5 @@
 /**
- * @voice-agent-kit/core
+ * @reaatech/voice-agent-core
  *
  * Core pipeline, session management, latency budget, and configuration for voice AI agents.
  */

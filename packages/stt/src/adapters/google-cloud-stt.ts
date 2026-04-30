@@ -1,9 +1,9 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 import { SpeechClient } from '@google-cloud/speech';
-import type { AudioChunk, Utterance } from '@voice-agent-kit/core';
+import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 
-import type { STTProvider, GoogleCloudSTTConfig } from '../interface.js';
+import type { GoogleCloudSTTConfig, STTProvider } from '../interface.js';
 import { STTProviderInterface } from '../interface.js';
 
 export interface GoogleCloudSTTOptions {
@@ -48,7 +48,7 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
 
     if (!apiKey && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       throw new Error(
-        'Google Cloud credentials are required (API key or GOOGLE_APPLICATION_CREDENTIALS)'
+        'Google Cloud credentials are required (API key or GOOGLE_APPLICATION_CREDENTIALS)',
       );
     }
 
@@ -72,7 +72,7 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
   }
 
   private async startStreamingRecognition(
-    config: GoogleCloudSTTConfig
+    config: GoogleCloudSTTConfig,
   ): Promise<RecognitionStream> {
     if (!this.client) {
       throw new Error('Client not initialized');
@@ -144,7 +144,7 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
 
       const alternative = result.alternatives[0];
 
-      if (alternative && alternative.transcript) {
+      if (alternative?.transcript) {
         const utterance: Utterance = {
           transcript: alternative.transcript,
           confidence: alternative.confidence || 0.9,
@@ -236,7 +236,7 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
 }
 
 export function createGoogleCloudSTTProvider(
-  options?: GoogleCloudSTTOptions
+  options?: GoogleCloudSTTOptions,
 ): GoogleCloudSTTProvider {
   return new GoogleCloudSTTProvider(options);
 }

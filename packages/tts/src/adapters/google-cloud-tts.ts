@@ -1,7 +1,7 @@
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
-import type { AudioChunk } from '@voice-agent-kit/core';
+import type { AudioChunk } from '@reaatech/voice-agent-core';
 
-import type { TTSProvider, GoogleCloudTTSConfig } from '../interface.js';
+import type { GoogleCloudTTSConfig, TTSProvider } from '../interface.js';
 import { TTSProviderInterface } from '../interface.js';
 
 export interface GoogleCloudTTSOptions {
@@ -147,7 +147,7 @@ export class GoogleCloudTTSProvider implements TTSProvider {
 }
 
 export function createGoogleCloudTTSProvider(
-  options?: GoogleCloudTTSOptions
+  options?: GoogleCloudTTSOptions,
 ): GoogleCloudTTSProvider {
   return new GoogleCloudTTSProvider(options);
 }

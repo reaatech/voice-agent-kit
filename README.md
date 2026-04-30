@@ -88,7 +88,7 @@ voice-agent-kit/
 
 ```typescript
 // voice-agent-kit.config.ts
-import { defineConfig } from '@voice-agent-kit/core';
+import { defineConfig } from '@reaatech/voice-agent-core';
 
 export default defineConfig({
   stt: { provider: 'deepgram', sampleRate: 8000, model: 'nova-2', language: 'en' },
