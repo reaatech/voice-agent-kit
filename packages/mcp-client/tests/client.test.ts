@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MCPClient } from '../src/client.js';
 import type { MCPClientConfig } from '../src/types.js';
 
@@ -66,7 +66,7 @@ describe('MCPClient', () => {
           sessionId: 'test-session',
           turnId: 'turn-1',
           history: [],
-        })
+        }),
       ).rejects.toThrow('MCP client not connected');
     });
 

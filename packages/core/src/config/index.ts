@@ -83,7 +83,7 @@ function loadEnvConfig(): Record<string, unknown> {
             credentials: { token: process.env.MCP_API_KEY },
           }
         : undefined,
-      timeout: process.env.MCP_TIMEOUT ? parseInt(process.env.MCP_TIMEOUT, 10) : 400,
+      timeout: process.env.MCP_TIMEOUT ? Number.parseInt(process.env.MCP_TIMEOUT, 10) : 400,
     };
   }
 
@@ -91,7 +91,9 @@ function loadEnvConfig(): Record<string, unknown> {
     envConfig.stt = {
       provider: process.env.STT_PROVIDER,
       apiKey: process.env.STT_API_KEY,
-      sampleRate: process.env.STT_SAMPLE_RATE ? parseInt(process.env.STT_SAMPLE_RATE, 10) : 8000,
+      sampleRate: process.env.STT_SAMPLE_RATE
+        ? Number.parseInt(process.env.STT_SAMPLE_RATE, 10)
+        : 8000,
     };
   }
 

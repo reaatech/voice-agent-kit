@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { loadConfig, defineConfig, getDefaultConfig } from '../src/config/index.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { defineConfig, getDefaultConfig, loadConfig } from '../src/config/index.js';
 import type { VoiceAgentKitConfig } from '../src/types/index.js';
 
 describe('Config', () => {
@@ -136,9 +136,9 @@ describe('Config', () => {
 
   describe('loadConfig', () => {
     it('should return default config when no env vars set', () => {
-      delete process.env.MCP_ENDPOINT;
-      delete process.env.STT_PROVIDER;
-      delete process.env.TTS_PROVIDER;
+      process.env.MCP_ENDPOINT = undefined;
+      process.env.STT_PROVIDER = undefined;
+      process.env.TTS_PROVIDER = undefined;
 
       const config = getDefaultConfig();
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TwilioMediaStreamHandler } from '../src/twilio-handler.js';
 
 describe('TwilioMediaStreamHandler', () => {
@@ -37,7 +37,7 @@ describe('TwilioMediaStreamHandler', () => {
         expect.objectContaining({
           callSid: 'CA123',
           streamSid: 'MS123',
-        })
+        }),
       );
     });
 
@@ -92,7 +92,7 @@ describe('TwilioMediaStreamHandler', () => {
       expect(endEvents[0]).toEqual(
         expect.objectContaining({
           callSid: 'CA123',
-        })
+        }),
       );
     });
 
@@ -120,7 +120,7 @@ describe('TwilioMediaStreamHandler', () => {
       expect(markEvents[0]).toEqual(
         expect.objectContaining({
           streamSid: 'MS123',
-        })
+        }),
       );
     });
   });
@@ -226,8 +226,8 @@ describe('TwilioMediaStreamHandler', () => {
                     codec: 'mulaw',
                     customParameters: {},
                   },
-                })
-              )
+                }),
+              ),
             );
         }),
         off: vi.fn(),
@@ -267,8 +267,8 @@ describe('TwilioMediaStreamHandler', () => {
                     codec: 'mulaw',
                     customParameters: {},
                   },
-                })
-              )
+                }),
+              ),
             );
         }),
         off: vi.fn(),
@@ -443,8 +443,8 @@ describe('TwilioMediaStreamHandler', () => {
                     codec: 'mulaw',
                     customParameters: {},
                   },
-                })
-              )
+                }),
+              ),
             );
         }),
         off: vi.fn(),
@@ -482,8 +482,8 @@ describe('TwilioMediaStreamHandler', () => {
                     codec: 'mulaw',
                     customParameters: {},
                   },
-                })
-              )
+                }),
+              ),
             );
         }),
         off: vi.fn(),

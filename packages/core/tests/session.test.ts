@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   SessionManager,
-  initializeSessionManager,
   getDefaultSessionManager,
+  initializeSessionManager,
 } from '../src/session/index.js';
 import type { Session } from '../src/types/index.js';
 

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 import type { LatencyBudget } from '../types/index.js';
 
@@ -139,7 +139,7 @@ export class LatencyBudgetEnforcer extends EventEmitter {
 
   checkStageBudget(
     stage: 'stt' | 'mcp' | 'tts',
-    elapsedMs: number
+    elapsedMs: number,
   ): {
     withinBudget: boolean;
     remainingMs: number;
@@ -216,7 +216,7 @@ export class PerformanceMonitor {
   private readonly samples: number[] = [];
   private readonly maxSamples: number;
 
-  constructor(maxSamples: number = 1000) {
+  constructor(maxSamples = 1000) {
     this.maxSamples = maxSamples;
   }
 

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
 import type { STTProvider } from '../pipeline/index.js';
 import type { AudioChunk, Utterance } from '../types/index.js';
@@ -70,7 +70,7 @@ export class MockSTTProvider extends EventEmitter implements STTProvider {
     for (let i = 1; i <= interimCount; i++) {
       const partialText = transcript.substring(
         0,
-        Math.floor((transcript.length / interimCount) * i)
+        Math.floor((transcript.length / interimCount) * i),
       );
 
       this.utteranceCallback({

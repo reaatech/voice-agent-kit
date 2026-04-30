@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SpanKind } from '@opentelemetry/api';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   Observability,
-  initializeObservability,
   getObservability,
+  initializeObservability,
   shutdownObservability,
 } from '../src/observability/index.js';
 import type { ObservabilityConfig, SpanAttributes } from '../src/observability/index.js';
@@ -116,7 +116,7 @@ describe('Observability', () => {
       await expect(
         observability.withSpan('test.span', async () => {
           throw new Error('test error');
-        })
+        }),
       ).rejects.toThrow('test error');
     });
   });

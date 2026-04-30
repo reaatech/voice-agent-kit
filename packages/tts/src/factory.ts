@@ -2,10 +2,10 @@ import { AWSPollyProvider } from './adapters/aws-polly.js';
 import { DeepgramTTSProvider } from './adapters/deepgram.js';
 import { GoogleCloudTTSProvider } from './adapters/google-cloud-tts.js';
 import type {
-  TTSProvider,
-  DeepgramTTSConfig,
   AWSPollyConfig,
+  DeepgramTTSConfig,
   GoogleCloudTTSConfig,
+  TTSProvider,
 } from './interface.js';
 
 export interface TTSProviderFactoryConfig {

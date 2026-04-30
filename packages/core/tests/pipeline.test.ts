@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Pipeline, createPipeline } from '../src/pipeline/index.js';
 import type { PipelineDependencies } from '../src/pipeline/index.js';
 import type { AudioChunk, Utterance } from '../src/types/index.js';
@@ -12,7 +12,7 @@ function createMockSTTProvider() {
     streamAudio: vi.fn().mockImplementation(() => {
       if (onUtteranceCallback) {
         setTimeout(() => {
-          onUtteranceCallback!({
+          onUtteranceCallback?.({
             transcript: 'test',
             isFinal: true,
             confidence: 0.9,
@@ -209,7 +209,7 @@ describe('Pipeline', () => {
 
     it('should emit error for non-existent session', async () => {
       (dependencies.sessionManager.getSession as ReturnType<typeof vi.fn>).mockReturnValue(
-        undefined
+        undefined,
       );
       const errorHandler = vi.fn();
       pipeline.on('pipeline:error', errorHandler);
@@ -311,14 +311,14 @@ describe('Pipeline - Turn Processing', () => {
 
   it('should handle connection errors during startSession', async () => {
     (dependencies.sttProvider.connect as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Connection failed')
+      new Error('Connection failed'),
     );
 
     const errorHandler = vi.fn();
     pipeline.on('pipeline:error', errorHandler);
 
     await expect(
-      pipeline.startSession({ sessionId: 'session-1', status: 'active' })
+      pipeline.startSession({ sessionId: 'session-1', status: 'active' }),
     ).rejects.toThrow('Connection failed');
   });
 });
@@ -413,7 +413,7 @@ describe('Pipeline - Error Handling', () => {
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
     (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('MCP error')
+      new Error('MCP error'),
     );
 
     const errorHandler = vi.fn();
@@ -438,7 +438,7 @@ describe('Pipeline - Error Handling', () => {
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
     (dependencies.mcpClient.sendRequest as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Network timeout')
+      new Error('Network timeout'),
     );
 
     const errors: any[] = [];

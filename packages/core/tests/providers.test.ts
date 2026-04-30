@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  MockSTTProvider,
-  MockTTSProvider,
-  MockMCPClient,
+  type MockMCPClient,
+  type MockSTTProvider,
+  type MockTTSProvider,
+  createMockMCPClient,
   createMockSTTProvider,
   createMockTTSProvider,
-  createMockMCPClient,
 } from '../src/providers/index.js';
 import type { AudioChunk } from '../src/types/index.js';
 
@@ -192,7 +192,7 @@ describe('MockMCPClient', () => {
           turnId: 'turn-1',
           utterance: 'Hello',
           history: [],
-        })
+        }),
       ).rejects.toThrow('MCP client not connected');
     });
   });
@@ -253,7 +253,7 @@ describe('MockMCPClient', () => {
           turnId: 'turn-1',
           utterance: 'Hello',
           history: [],
-        })
+        }),
       ).rejects.toThrow('Simulated error');
     });
   });

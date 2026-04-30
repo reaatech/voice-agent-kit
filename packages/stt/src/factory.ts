@@ -2,10 +2,10 @@ import { AWSTranscribeProvider } from './adapters/aws-transcribe.js';
 import { DeepgramSTTProvider } from './adapters/deepgram.js';
 import { GoogleCloudSTTProvider } from './adapters/google-cloud-stt.js';
 import type {
-  STTProvider,
-  DeepgramConfig,
   AWSTranscribeConfig,
+  DeepgramConfig,
   GoogleCloudSTTConfig,
+  STTProvider,
 } from './interface.js';
 
 export interface STTProviderFactoryConfig {

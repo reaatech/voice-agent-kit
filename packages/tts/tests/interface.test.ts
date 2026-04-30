@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeepgramTTSProvider } from '../src/adapters/deepgram.js';
 import type { TTSProvider } from '../src/interface.js';
 

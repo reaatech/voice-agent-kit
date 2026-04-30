@@ -1,5 +1,5 @@
-import type { Span, Tracer, SpanKind } from '@opentelemetry/api';
-import { SpanKind as SK, metrics, SpanStatusCode as SC, trace } from '@opentelemetry/api';
+import type { Span, SpanKind, Tracer } from '@opentelemetry/api';
+import { SpanStatusCode as SC, SpanKind as SK, metrics, trace } from '@opentelemetry/api';
 
 export interface ObservabilityConfig {
   serviceName: string;
@@ -96,7 +96,7 @@ class Observability {
     name: string,
     fn: (span: Span) => T,
     attributes?: SpanAttributes,
-    _kind: SpanKind = SK.INTERNAL
+    _kind: SpanKind = SK.INTERNAL,
   ): T {
     const span = this.startSpan(name, attributes);
     if (!span) {
@@ -119,7 +119,7 @@ class Observability {
   withSpan<T>(
     name: string,
     fn: (span: Span | null) => Promise<T>,
-    attributes?: SpanAttributes
+    attributes?: SpanAttributes,
   ): Promise<T> {
     const span = this.startSpan(name, attributes);
 

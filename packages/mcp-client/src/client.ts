@@ -1,10 +1,10 @@
 import type {
   MCPClientConfig,
+  MCPMessage,
   MCPRequestParams,
   MCPResponse,
-  MCPTool,
-  MCPMessage,
   MCPResult,
+  MCPTool,
 } from './types.js';
 
 export class MCPClient {
@@ -61,7 +61,7 @@ export class MCPClient {
       return this.parseResponse(response, latencyMs);
     } catch (error) {
       throw new Error(
-        `MCP request failed: ${error instanceof Error ? error.message : String(error)}`
+        `MCP request failed: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -131,7 +131,7 @@ export class MCPClient {
 
       if (this.config.auth) {
         if (this.config.auth.type === 'bearer') {
-          headers['Authorization'] = `Bearer ${this.config.auth.credentials.token}`;
+          headers.Authorization = `Bearer ${this.config.auth.credentials.token}`;
         } else if (this.config.auth.type === 'api-key') {
           const key = this.config.auth.credentials.key;
           if (key) {
@@ -158,7 +158,7 @@ export class MCPClient {
   }
 
   private truncateHistory(
-    history: Array<{ role: string; content: string }>
+    history: Array<{ role: string; content: string }>,
   ): Array<{ role: string; content: string }> {
     const maxTurns = this.config.maxHistoryTurns || 20;
     return history.slice(-maxTurns);

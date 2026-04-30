@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Session, Turn, SessionConfig } from '../types/index.js';
+import type { Session, SessionConfig, Turn } from '../types/index.js';
 
 export interface SessionManagerOptions {
   defaultTTL: number;
