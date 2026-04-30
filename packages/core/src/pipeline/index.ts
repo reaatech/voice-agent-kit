@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 
 import { SpanKind } from '@opentelemetry/api';
 import { v4 as uuidv4 } from 'uuid';

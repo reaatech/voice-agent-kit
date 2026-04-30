@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 
 import type { STTProvider } from '../pipeline/index.js';
 import type { AudioChunk, Utterance } from '../types/index.js';

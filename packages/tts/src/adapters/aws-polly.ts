@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 
 import { Engine, OutputFormat, PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { fromIni } from '@aws-sdk/credential-provider-ini';

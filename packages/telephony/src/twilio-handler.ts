@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import { EventEmitter } from 'events';
 
 import type { AudioChunk } from '@reaatech/voice-agent-core';
 import WebSocket from 'ws';
