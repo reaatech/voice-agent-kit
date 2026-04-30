@@ -103,22 +103,24 @@ See the [`examples/`](./examples/) directory for complete working samples, inclu
 
 ## Packages
 
-| Package | Description |
-| ------- | ----------- |
-| [`@reaatech/voice-agent-core`](./packages/core) | Pipeline orchestrator, session management, latency enforcement, config, and types |
-| [`@reaatech/voice-agent-stt`](./packages/stt) | Speech-to-text provider interface with Deepgram, AWS, and Google adapters |
-| [`@reaatech/voice-agent-tts`](./packages/tts) | Text-to-speech provider interface with Deepgram, AWS, and Google adapters |
-| [`@reaatech/voice-agent-mcp-client`](./packages/mcp-client) | JSON-RPC 2.0 MCP client with tool discovery and response sanitization |
-| [`@reaatech/voice-agent-telephony`](./packages/telephony) | Twilio Media Streams WebSocket handler with barge-in detection |
+
+| Package                                                     | Description                                                                       |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [`@reaatech/voice-agent-core`](./packages/core)             | Pipeline orchestrator, session management, latency enforcement, config, and types |
+| [`@reaatech/voice-agent-stt`](./packages/stt)               | Speech-to-text provider interface with Deepgram, AWS, and Google adapters         |
+| [`@reaatech/voice-agent-tts`](./packages/tts)               | Text-to-speech provider interface with Deepgram, AWS, and Google adapters         |
+| [`@reaatech/voice-agent-mcp-client`](./packages/mcp-client) | JSON-RPC 2.0 MCP client with tool discovery and response sanitization             |
+| [`@reaatech/voice-agent-telephony`](./packages/telephony)   | Twilio Media Streams WebSocket handler with barge-in detection                    |
 
 ## Latency Budget
 
-| Stage | Budget | Notes |
-|-------|--------|-------|
-| STT | 200ms | Deepgram nova-2 typically delivers well under budget |
-| MCP | 400ms | Agent round-trip; depends on endpoint complexity |
-| TTS | 200ms | Deepgram Aura first-byte is usually under 100ms |
-| **Total** | **800ms** | Hard cap at 1200ms triggers budget-exceeded metrics |
+
+| Stage     | Budget    | Notes                                                |
+| --------- | --------- | ---------------------------------------------------- |
+| STT       | 200ms     | Deepgram nova-2 typically delivers well under budget |
+| MCP       | 400ms     | Agent round-trip; depends on endpoint complexity     |
+| TTS       | 200ms     | Deepgram Aura first-byte is usually under 100ms      |
+| **Total** | **800ms** | Hard cap at 1200ms triggers budget-exceeded metrics  |
 
 ## Pipeline Flow
 
@@ -132,7 +134,6 @@ Twilio WebSocket  →  AudioChunk  →  STT  →  Utterance  →  MCP  →  Agen
 - [`AGENTS.md`](./AGENTS.md) — Coding conventions and development guidelines
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution workflow, adding providers, and release process
 - [`LATENCY_BUDGET.md`](./docs/LATENCY_BUDGET.md) — Per-provider latency characteristics and tuning
-- [`DEV_PLAN.md`](./DEV_PLAN.md) — Development checklist and roadmap
 
 ## License
 
