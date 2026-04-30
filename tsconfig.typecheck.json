@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@reaatech/voice-agent-core": ["./packages/core/src/index.ts"],
+      "@reaatech/voice-agent-stt": ["./packages/stt/src/index.ts"],
+      "@reaatech/voice-agent-tts": ["./packages/tts/src/index.ts"],
+      "@reaatech/voice-agent-telephony": ["./packages/telephony/src/index.ts"],
+      "@reaatech/voice-agent-mcp-client": ["./packages/mcp-client/src/index.ts"]
+    }
+  },
+  "include": ["packages/**/src/**/*.ts"]
+}
