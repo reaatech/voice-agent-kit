@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { defineConfig, getDefaultConfig, loadConfig } from '../src/config/index.js';
 import type { VoiceAgentKitConfig } from '../src/types/index.js';
 

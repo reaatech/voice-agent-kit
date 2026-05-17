@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  SessionManager,
   getDefaultSessionManager,
   initializeSessionManager,
+  SessionManager,
 } from '../src/session/index.js';
-import type { Session } from '../src/types/index.js';
 
 describe('SessionManager', () => {
   let sessionManager: SessionManager;

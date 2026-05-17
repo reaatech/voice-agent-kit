@@ -45,6 +45,9 @@
   },
   "homepage": "https://github.com/reaatech/voice-agent-kit#readme",
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild"
+    ]
   }
 }

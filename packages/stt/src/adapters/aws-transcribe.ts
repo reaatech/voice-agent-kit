@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events';
-
 import {
   type LanguageCode,
   MediaEncoding,
@@ -8,6 +6,7 @@ import {
 } from '@aws-sdk/client-transcribe-streaming';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
+import { EventEmitter } from 'events';
 
 import type { AWSTranscribeConfig, STTProvider } from '../interface.js';
 import { STTProviderInterface } from '../interface.js';

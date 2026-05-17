@@ -4,16 +4,16 @@
  * Twilio Media Streams adapter for voice AI agents.
  */
 
+export { createTwilioHandler } from './factory.js';
+export type { BargeInEvent, TwilioHandlerConfig } from './twilio-handler.js';
 export { TwilioMediaStreamHandler } from './twilio-handler.js';
 export type {
-  TwilioMessage,
+  TwilioDTMFMessage,
+  TwilioMarkMessage,
   TwilioMediaMessage,
+  TwilioMessage,
+  TwilioOutboundMessage,
   TwilioStartMessage,
   TwilioStopMessage,
-  TwilioMarkMessage,
-  TwilioDTMFMessage,
-  TwilioOutboundMessage,
   TwilioStreamConfig,
 } from './types.js';
-export type { TwilioHandlerConfig, BargeInEvent } from './twilio-handler.js';
-export { createTwilioHandler } from './factory.js';

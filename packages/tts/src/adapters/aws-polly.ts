@@ -1,8 +1,7 @@
-import { EventEmitter } from 'events';
-
 import { Engine, OutputFormat, PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { EventEmitter } from 'events';
 
 import type { AWSPollyConfig, TTSProvider } from '../interface.js';
 

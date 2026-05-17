@@ -5,14 +5,14 @@
  */
 
 export { MCPClient } from './client.js';
+export { createMCPClient } from './factory.js';
 export type {
   MCPClientConfig,
-  MCPTool,
+  MCPError,
+  MCPMessage,
   MCPRequestParams,
   MCPResponse,
-  MCPMessage,
   MCPResult,
-  MCPError,
+  MCPTool,
   MCPToolCall,
 } from './types.js';
-export { createMCPClient } from './factory.js';
