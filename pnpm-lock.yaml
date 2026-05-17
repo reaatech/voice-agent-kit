@@ -160,8 +160,8 @@ importers:
         specifier: ^3.972.38
         version: 3.972.38
       '@google-cloud/text-to-speech':
-        specifier: ^6.4.0
-        version: 6.4.0
+        specifier: ^6.4.1
+        version: 6.4.1
       '@reaatech/voice-agent-core':
         specifier: workspace:*
         version: link:../core
@@ -812,8 +812,8 @@ packages:
     resolution: {integrity: sha512-uIKMVa709tHitt8grCDM9SCrCF4tUHlXxeaPFqgqi0YhNdu+VSekIH7k8+kpWD+ajeA/OVcCn+Ujdx6h3d9YTw==}
     engines: {node: '>=18'}
 
-  '@google-cloud/text-to-speech@6.4.0':
-    resolution: {integrity: sha512-KUnK+mBYz9aegxHrBbwEignOkGRqXvqOXs/EGY7CAJhMFKuNSieW02/PV/ipVRsJM11MP69qgTgEetoyAN0HAg==}
+  '@google-cloud/text-to-speech@6.4.1':
+    resolution: {integrity: sha512-iF1SpBPbP019zoLYzIJXp/yDumrSNl19T7hXP4Lg8d2cnNtxoQKQuNOpiwFrxEKV3CBJpp7OY5+z7/K73zNr5w==}
     engines: {node: '>=18'}
 
   '@grpc/grpc-js@1.14.3':
@@ -3298,7 +3298,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@google-cloud/text-to-speech@6.4.0':
+  '@google-cloud/text-to-speech@6.4.1':
     dependencies:
       google-gax: 5.0.6
     transitivePeerDependencies:
