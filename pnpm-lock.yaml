@@ -95,8 +95,8 @@ importers:
         specifier: ^3.972.38
         version: 3.972.38
       '@google-cloud/speech':
-        specifier: ^7.3.0
-        version: 7.3.0
+        specifier: ^7.3.1
+        version: 7.3.1
       '@reaatech/voice-agent-core':
         specifier: workspace:*
         version: link:../core
@@ -808,8 +808,8 @@ packages:
     resolution: {integrity: sha512-G/FQx5cE/+DqBbOpA5jKsegGwdPniU6PuIEMt+qxWgFxvxuFOzVmp6zYchtYuwAWV5/8Dgs0yAmjvNZv3uXLQg==}
     engines: {node: '>=18'}
 
-  '@google-cloud/speech@7.3.0':
-    resolution: {integrity: sha512-8jwVB4szH3DKYeJa6fc5zDwGt41a06Rkbcbh+pcXw+zQigjHw6pkGu92XohciHhaudhvc7BCzKCZqCZd45k+Cg==}
+  '@google-cloud/speech@7.3.1':
+    resolution: {integrity: sha512-uIKMVa709tHitt8grCDM9SCrCF4tUHlXxeaPFqgqi0YhNdu+VSekIH7k8+kpWD+ajeA/OVcCn+Ujdx6h3d9YTw==}
     engines: {node: '>=18'}
 
   '@google-cloud/text-to-speech@6.4.0':
@@ -1217,7 +1217,6 @@ packages:
     resolution: {integrity: sha512-p6/FO1n2KxMeQyna067i0uJ6TSbb165ZhnRtCpWh4Foxqbfc6oW+XITaL8QkFJj3KFnDe2URt4gOhgU06EP9ew==}
     engines: {node: '>=18.0.0'}
     deprecated: '@smithy/util-retry v4.3.6 contains a bug in Adaptive Retry, see https://github.com/smithy-lang/smithy-typescript/issues/1993. Upgrade to 4.3.7+'
-
   '@smithy/util-retry@4.3.8':
     resolution: {integrity: sha512-LUIxbTBi+OpvXpg91poGA6BdyoleMDLnfXjVDqyi2RvZmTveY5loE/FgYUBCR5LU2BThW2SoZRh8dTIIy38IPw==}
     engines: {node: '>=18.0.0'}
@@ -3280,7 +3279,7 @@ snapshots:
 
   '@google-cloud/promisify@4.1.0': {}
 
-  '@google-cloud/speech@7.3.0':
+  '@google-cloud/speech@7.3.1':
     dependencies:
       '@google-cloud/common': 6.0.0
       '@types/pumpify': 1.4.5
