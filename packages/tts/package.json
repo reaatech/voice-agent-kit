@@ -41,7 +41,7 @@
     "@google-cloud/text-to-speech": "^6.4.1",
     "@reaatech/voice-agent-core": "workspace:*",
     "debug": "^4.3.4",
-    "ws": "^8.16.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@types/ws": "^8.5.10",
