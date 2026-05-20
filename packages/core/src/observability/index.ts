@@ -1,5 +1,5 @@
 import type { Span, SpanKind, Tracer } from '@opentelemetry/api';
-import { SpanStatusCode as SC, SpanKind as SK, metrics, trace } from '@opentelemetry/api';
+import { metrics, SpanStatusCode as SC, SpanKind as SK, trace } from '@opentelemetry/api';
 
 export interface ObservabilityConfig {
   serviceName: string;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Pipeline, createPipeline } from '../src/pipeline/index.js';
 import type { PipelineDependencies } from '../src/pipeline/index.js';
+import { createPipeline, Pipeline } from '../src/pipeline/index.js';
 import type { AudioChunk, Utterance } from '../src/types/index.js';
 
 // Mock providers

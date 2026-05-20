@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createLatencyBudget,
   LatencyBudgetEnforcer,
   PerformanceMonitor,
-  createLatencyBudget,
 } from '../src/latency/index.js';
 import type { LatencyBudget } from '../src/types/index.js';
 

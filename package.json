@@ -23,7 +23,7 @@
     "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.15",
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.31.0",
     "@types/node": "^25.6.2",
@@ -45,6 +45,9 @@
   },
   "homepage": "https://github.com/reaatech/voice-agent-kit#readme",
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "esbuild"
+    ]
   }
 }

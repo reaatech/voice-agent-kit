@@ -1,7 +1,6 @@
-import { EventEmitter } from 'events';
-
 import { SpeechClient } from '@google-cloud/speech';
 import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
+import { EventEmitter } from 'events';
 
 import type { GoogleCloudSTTConfig, STTProvider } from '../interface.js';
 import { STTProviderInterface } from '../interface.js';

@@ -1,12 +1,12 @@
 import { SpanKind } from '@opentelemetry/api';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { ObservabilityConfig, SpanAttributes } from '../src/observability/index.js';
 import {
-  Observability,
   getObservability,
   initializeObservability,
+  Observability,
   shutdownObservability,
 } from '../src/observability/index.js';
-import type { ObservabilityConfig, SpanAttributes } from '../src/observability/index.js';
 
 describe('Observability', () => {
   let observability: Observability;

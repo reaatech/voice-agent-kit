@@ -4,31 +4,27 @@
  * Speech-to-text provider interface and adapters for voice AI agents.
  */
 
-// Provider interface
-export { STTProviderInterface } from './interface.js';
-export type {
-  STTProvider,
-  STTProviderEvents,
-  DeepgramConfig,
-  AWSTranscribeConfig,
-  GoogleCloudSTTConfig,
-} from './interface.js';
-
-// Deepgram adapter
-export { DeepgramSTTProvider, createDeepgramSTTProvider } from './adapters/deepgram.js';
-export type { DeepgramSTTOptions } from './adapters/deepgram.js';
-
+export type { AWSTranscribeOptions } from './adapters/aws-transcribe.js';
 // AWS Transcribe adapter
 export { AWSTranscribeProvider, createAWSTranscribeProvider } from './adapters/aws-transcribe.js';
-export type { AWSTranscribeOptions } from './adapters/aws-transcribe.js';
-
+export type { DeepgramSTTOptions } from './adapters/deepgram.js';
+// Deepgram adapter
+export { createDeepgramSTTProvider, DeepgramSTTProvider } from './adapters/deepgram.js';
+export type { GoogleCloudSTTOptions } from './adapters/google-cloud-stt.js';
 // Google Cloud STT adapter
 export {
-  GoogleCloudSTTProvider,
   createGoogleCloudSTTProvider,
+  GoogleCloudSTTProvider,
 } from './adapters/google-cloud-stt.js';
-export type { GoogleCloudSTTOptions } from './adapters/google-cloud-stt.js';
-
+export type { STTProviderFactoryConfig } from './factory.js';
 // Factory
 export { createSTTProvider } from './factory.js';
-export type { STTProviderFactoryConfig } from './factory.js';
+export type {
+  AWSTranscribeConfig,
+  DeepgramConfig,
+  GoogleCloudSTTConfig,
+  STTProvider,
+  STTProviderEvents,
+} from './interface.js';
+// Provider interface
+export { STTProviderInterface } from './interface.js';
