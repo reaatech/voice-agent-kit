@@ -7,7 +7,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm install && pnpm -r build",
     "dev": "pnpm -r --parallel dev",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
