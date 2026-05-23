@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@reaatech/voice-agent-stt)](https://www.npmjs.com/package/@reaatech/voice-agent-stt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/reaatech/voice-agent-kit/blob/main/LICENSE)
-[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml)
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
@@ -13,6 +13,18 @@ Provider-agnostic speech-to-text interface with three adapter implementations: D
 ```bash
 npm install @reaatech/voice-agent-stt
 pnpm add @reaatech/voice-agent-stt
+```
+
+### Provider SDKs (install only what you use)
+
+The cloud adapters load their provider SDKs lazily and declare them as **optional peer dependencies**, so you only install the SDK for the provider you actually use. Deepgram needs no extra SDK.
+
+```bash
+# AWS Transcribe
+npm install @aws-sdk/client-transcribe-streaming @aws-sdk/credential-provider-ini
+
+# Google Cloud Speech-to-Text
+npm install @google-cloud/speech
 ```
 
 ## Feature Overview

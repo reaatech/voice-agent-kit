@@ -11,4 +11,3 @@ This directory contains reference documentation for the voice-agent-kit project.
 - [ARCHITECTURE.md](../ARCHITECTURE.md) — High-level architecture and pipeline diagram
 - [AGENTS.md](../AGENTS.md) — Agent development guide and project conventions
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — How to add providers and infrastructure targets
-- [DEV_PLAN.md](../DEV_PLAN.md) — Development checklist and roadmap

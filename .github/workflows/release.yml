@@ -42,6 +42,12 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Verify package exports (publint)
+        run: pnpm lint:publish
+
+      - name: Smoke-test built output (ESM + CJS)
+        run: pnpm test:dist
+
       - name: Create release PR or publish to npm
         id: changesets
         uses: changesets/action@v1

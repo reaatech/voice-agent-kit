@@ -258,4 +258,3 @@ Edit `packages/core/src/latency/index.ts` and update `LATENCY_BUDGET.md`.
 - **ARCHITECTURE.md** — Detailed architecture and pipeline diagram
 - **LATENCY_BUDGET.md** — Per-provider latency characteristics and tuning
 - **CONTRIBUTING.md** — How to add providers and Terraform targets
-- **DEV_PLAN.md** — Development checklist and roadmap

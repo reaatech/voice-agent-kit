@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@reaatech/voice-agent-tts)](https://www.npmjs.com/package/@reaatech/voice-agent-tts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/reaatech/voice-agent-kit/blob/main/LICENSE)
-[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml)
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
@@ -13,6 +13,18 @@ Provider-agnostic text-to-speech interface with three adapter implementations: D
 ```bash
 npm install @reaatech/voice-agent-tts
 pnpm add @reaatech/voice-agent-tts
+```
+
+### Provider SDKs (install only what you use)
+
+The cloud adapters load their provider SDKs lazily and declare them as **optional peer dependencies**, so you only install the SDK for the provider you actually use. Deepgram needs no extra SDK.
+
+```bash
+# AWS Polly
+npm install @aws-sdk/client-polly @aws-sdk/credential-provider-ini
+
+# Google Cloud Text-to-Speech
+npm install @google-cloud/text-to-speech
 ```
 
 ## Feature Overview

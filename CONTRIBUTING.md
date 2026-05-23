@@ -112,6 +112,15 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
 2. **Add tests** and **export** following the same pattern as STT.
 
+## Provider SDK Dependencies
+
+If an adapter needs a heavy provider SDK (e.g. an `@aws-sdk/*` or `@google-cloud/*` package), keep it out of every consumer's install:
+
+- Declare it as an **optional peer dependency** — add it to both `peerDependencies` and `peerDependenciesMeta` (`optional: true`) in the package's `package.json`, and to `devDependencies` so the build and tests resolve it.
+- **Load it lazily** with a dynamic `await import('...')` inside the adapter (typically in `connect()` or the client factory), so the SDK is only resolved when that provider is actually used. Import only types statically with `import type`.
+
+This keeps the package installable with no SDK for users who only need another provider (Deepgram needs none).
+
 ## Adding a New Terraform Target
 
 1. **Create directory** in `infra/your-platform/`:
@@ -199,7 +208,7 @@ pnpm test:coverage
 - Update `README.md` for user-facing changes
 - Update `ARCHITECTURE.md` for architectural changes
 - Add inline comments for complex logic
-- Update `DEV_PLAN.md` checklist
+- Add a changeset (`pnpm changeset`) for any user-facing change
 
 ## Questions?
 

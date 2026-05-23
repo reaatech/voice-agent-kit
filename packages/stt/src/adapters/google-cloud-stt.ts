@@ -1,4 +1,4 @@
-import { SpeechClient } from '@google-cloud/speech';
+import type { SpeechClient } from '@google-cloud/speech';
 import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 import { EventEmitter } from 'events';
 
@@ -50,6 +50,10 @@ export class GoogleCloudSTTProvider extends EventEmitter implements STTProvider 
         'Google Cloud credentials are required (API key or GOOGLE_APPLICATION_CREDENTIALS)',
       );
     }
+
+    // Lazily load the Google Cloud SDK so it is only resolved when this
+    // provider is actually used.
+    const { SpeechClient } = await import('@google-cloud/speech');
 
     this.client = new SpeechClient({
       projectId: projectId,
