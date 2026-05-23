@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Core pipeline orchestration, session management, latency enforcement, configuration, and types for building voice-enabled AI agents",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",

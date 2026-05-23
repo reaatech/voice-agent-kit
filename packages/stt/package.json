@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-stt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provider-agnostic speech-to-text interface with Deepgram, AWS Transcribe, and Google Cloud Speech-to-Text adapters",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",

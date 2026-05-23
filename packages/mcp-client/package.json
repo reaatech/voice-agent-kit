@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-mcp-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "JSON-RPC 2.0 client for connecting voice AI agents to any MCP (Model Context Protocol) server endpoint",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",

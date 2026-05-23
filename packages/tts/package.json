@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-tts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Provider-agnostic text-to-speech interface with Deepgram Aura, AWS Polly, and Google Cloud Text-to-Speech adapters",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",
