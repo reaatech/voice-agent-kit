@@ -1,4 +1,4 @@
-import { TextToSpeechClient } from '@google-cloud/text-to-speech';
+import type { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
 
 import type { GoogleCloudTTSConfig, TTSProvider } from '../interface.js';
@@ -37,6 +37,10 @@ export class GoogleCloudTTSProvider implements TTSProvider {
     if (!apiKey && !keyFilename && !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       throw new Error('Google Cloud credentials are required');
     }
+
+    // Lazily load the Google Cloud SDK so it is only resolved when this
+    // provider is actually used.
+    const { TextToSpeechClient } = await import('@google-cloud/text-to-speech');
 
     this.client = new TextToSpeechClient({
       projectId,

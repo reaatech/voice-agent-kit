@@ -28,19 +28,40 @@ Packages are published under the `@reaatech` scope and can be installed individu
 
 ```bash
 # Core pipeline, session management, config, and types
-pnpm add @reaatech/voice-agent-core
+npm install @reaatech/voice-agent-core        # or: pnpm add / yarn add
 
 # Speech-to-text provider adapters
-pnpm add @reaatech/voice-agent-stt
+npm install @reaatech/voice-agent-stt
 
 # Text-to-speech provider adapters
-pnpm add @reaatech/voice-agent-tts
+npm install @reaatech/voice-agent-tts
 
 # MCP client wrapper
-pnpm add @reaatech/voice-agent-mcp-client
+npm install @reaatech/voice-agent-mcp-client
 
 # Twilio Media Streams handler
-pnpm add @reaatech/voice-agent-telephony
+npm install @reaatech/voice-agent-telephony
+```
+
+> `@reaatech/voice-agent-core` requires `@opentelemetry/api` as a peer dependency for
+> tracing and metrics — install it alongside core:
+>
+> ```bash
+> npm install @opentelemetry/api
+> ```
+
+#### Provider SDKs (install only what you use)
+
+The cloud STT/TTS adapters load their provider SDKs lazily and declare them as
+**optional peer dependencies**, so you only install the SDK for the provider you
+actually use. Deepgram needs no extra SDK.
+
+```bash
+# AWS Polly (TTS) / AWS Transcribe (STT)
+npm install @aws-sdk/client-polly @aws-sdk/client-transcribe-streaming @aws-sdk/credential-provider-ini
+
+# Google Cloud Text-to-Speech (TTS) / Speech-to-Text (STT)
+npm install @google-cloud/text-to-speech @google-cloud/speech
 ```
 
 ### Contributing

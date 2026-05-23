@@ -1,5 +1,4 @@
-import { Engine, OutputFormat, PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
-import { fromIni } from '@aws-sdk/credential-provider-ini';
+import type { Engine, PollyClient } from '@aws-sdk/client-polly';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
 import { EventEmitter } from 'events';
 
@@ -21,36 +20,61 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
   private _config: AWSPollyConfig | null = null;
   private options: AWSPollyOptions;
   private isCancelled = false;
+  private pollyModule: typeof import('@aws-sdk/client-polly') | null = null;
+  private credModule: typeof import('@aws-sdk/credential-provider-ini') | null = null;
 
   constructor(options: AWSPollyOptions = {}) {
     super();
     this.options = {
       region: 'us-east-1',
       defaultVoiceId: 'Joanna',
-      defaultEngine: Engine.NEURAL,
       ...options,
     };
+  }
+
+  /**
+   * Lazily load the AWS SDK so it is only resolved when this provider is
+   * actually used, keeping it out of the install/startup path for consumers
+   * who only need another provider.
+   */
+  private async loadSdk(): Promise<typeof import('@aws-sdk/client-polly')> {
+    if (!this.pollyModule) {
+      this.pollyModule = await import('@aws-sdk/client-polly');
+    }
+    return this.pollyModule;
+  }
+
+  private async createClient(config: AWSPollyConfig): Promise<PollyClient> {
+    const { PollyClient } = await this.loadSdk();
+    const region = config.region || this.options.region || 'us-east-1';
+    const apiKey = config.apiKey;
+
+    if (apiKey) {
+      return new PollyClient({
+        region,
+        credentials: {
+          accessKeyId: apiKey,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+        },
+      });
+    }
+
+    if (!this.credModule) {
+      this.credModule = await import('@aws-sdk/credential-provider-ini');
+    }
+    return new PollyClient({ region, credentials: this.credModule.fromIni() });
   }
 
   async connect(config: AWSPollyConfig): Promise<void> {
     this._config = config;
 
     const apiKey = config.apiKey;
-    const region = config.region || this.options.region || 'us-east-1';
 
     if (!apiKey && !process.env.AWS_ACCESS_KEY_ID) {
       throw new Error('AWS credentials are required (API key or AWS_ACCESS_KEY_ID)');
     }
 
-    this.client = new PollyClient({
-      region,
-      credentials: apiKey
-        ? {
-            accessKeyId: apiKey,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-          }
-        : fromIni(),
-    });
+    this.client = await this.createClient(config);
 
     this.connected = true;
     this.emit('connected');
@@ -63,18 +87,10 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
 
     // Lazy-initialize client if not already created
     if (!this.client) {
-      const apiKey = this._config.apiKey;
-      const region = this._config.region || this.options.region || 'us-east-1';
-      this.client = new PollyClient({
-        region,
-        credentials: apiKey
-          ? {
-              accessKeyId: apiKey,
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-            }
-          : fromIni(),
-      });
+      this.client = await this.createClient(this._config);
     }
+
+    const { SynthesizeSpeechCommand, OutputFormat, Engine } = await this.loadSdk();
 
     const fullConfig: AWSPollyConfig = {
       ...this._config,

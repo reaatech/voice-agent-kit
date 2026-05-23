@@ -1,10 +1,4 @@
-import {
-  type LanguageCode,
-  MediaEncoding,
-  StartStreamTranscriptionCommand,
-  TranscribeStreamingClient,
-} from '@aws-sdk/client-transcribe-streaming';
-import { fromIni } from '@aws-sdk/credential-provider-ini';
+import type { LanguageCode, TranscribeStreamingClient } from '@aws-sdk/client-transcribe-streaming';
 import type { AudioChunk, Utterance } from '@reaatech/voice-agent-core';
 import { EventEmitter } from 'events';
 
@@ -29,6 +23,8 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   private transcriptionStream: AsyncIterable<unknown> | null = null;
   private audioInputQueue: Uint8Array[] = [];
   private audioInputResolver: (() => void) | null = null;
+  private transcribeModule: typeof import('@aws-sdk/client-transcribe-streaming') | null = null;
+  private credModule: typeof import('@aws-sdk/credential-provider-ini') | null = null;
 
   constructor(options: AWSTranscribeOptions = {}) {
     super();
@@ -50,15 +46,31 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
       throw new Error('AWS credentials are required (API key or AWS_ACCESS_KEY_ID)');
     }
 
-    this.client = new TranscribeStreamingClient({
-      region,
-      credentials: apiKey
-        ? {
-            accessKeyId: apiKey,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-          }
-        : fromIni(),
-    });
+    // Lazily load the AWS SDK so it is only resolved when this provider is
+    // actually used, keeping it out of the install/startup path for consumers
+    // who only need another provider.
+    if (!this.transcribeModule) {
+      this.transcribeModule = await import('@aws-sdk/client-transcribe-streaming');
+    }
+    const { TranscribeStreamingClient } = this.transcribeModule;
+
+    if (apiKey) {
+      this.client = new TranscribeStreamingClient({
+        region,
+        credentials: {
+          accessKeyId: apiKey,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+        },
+      });
+    } else {
+      if (!this.credModule) {
+        this.credModule = await import('@aws-sdk/credential-provider-ini');
+      }
+      this.client = new TranscribeStreamingClient({
+        region,
+        credentials: this.credModule.fromIni(),
+      });
+    }
 
     try {
       this.transcriptionStream = await this.startTranscription(config);
@@ -73,9 +85,11 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
   }
 
   private async startTranscription(config: AWSTranscribeConfig): Promise<AsyncIterable<unknown>> {
-    if (!this.client) {
+    if (!this.client || !this.transcribeModule) {
       throw new Error('Client not initialized');
     }
+
+    const { MediaEncoding, StartStreamTranscriptionCommand } = this.transcribeModule;
 
     const input = {
       LanguageCode: (config.languageCode || 'en-US') as LanguageCode,

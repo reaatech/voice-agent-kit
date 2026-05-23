@@ -2,18 +2,20 @@
 
 [![npm version](https://img.shields.io/npm/v/@reaatech/voice-agent-core)](https://www.npmjs.com/package/@reaatech/voice-agent-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/reaatech/voice-agent-kit/blob/main/LICENSE)
-[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/ci.yml)
+[![CI](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml/badge.svg)](https://github.com/reaatech/voice-agent-kit/actions/workflows/test.yml)
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
-Core pipeline orchestration, session management, latency enforcement, configuration, and types for building voice-enabled AI agents. Zero runtime dependencies beyond zod, uuid, and OpenTelemetry API.
+Core pipeline orchestration, session management, latency enforcement, configuration, and types for building voice-enabled AI agents. Runtime dependencies are limited to `zod` and `uuid`; `@opentelemetry/api` is a peer dependency.
 
 ## Installation
 
 ```bash
-npm install @reaatech/voice-agent-core
-pnpm add @reaatech/voice-agent-core
+npm install @reaatech/voice-agent-core @opentelemetry/api
+pnpm add @reaatech/voice-agent-core @opentelemetry/api
 ```
+
+`@opentelemetry/api` is a required peer dependency — install it alongside core. It is a tiny, dependency-free package and acts as a no-op when no OpenTelemetry SDK is registered.
 
 ## Feature Overview
 
