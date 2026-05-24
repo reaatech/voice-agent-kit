@@ -17,6 +17,7 @@ COPY packages/telephony/package.json ./packages/telephony/
 COPY packages/webrtc/package.json ./packages/webrtc/
 COPY packages/simulator/package.json ./packages/simulator/
 COPY packages/create-voice-agent/package.json ./packages/create-voice-agent/
+COPY examples/quickstart/package.json ./examples/quickstart/
 
 # Copy per-package tsconfig files
 COPY packages/core/tsconfig.json ./packages/core/
@@ -27,6 +28,7 @@ COPY packages/telephony/tsconfig.json ./packages/telephony/
 COPY packages/webrtc/tsconfig.json ./packages/webrtc/
 COPY packages/simulator/tsconfig.json ./packages/simulator/
 COPY packages/create-voice-agent/tsconfig.json ./packages/create-voice-agent/
+COPY examples/quickstart/tsconfig.json ./examples/quickstart/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
