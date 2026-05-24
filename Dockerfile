@@ -3,17 +3,20 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
 # Copy root workspace files
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* .npmrc ./
 
-# Copy package manifests for dependency installation
+# Copy all package manifests for dependency installation
 COPY packages/core/package.json ./packages/core/
 COPY packages/stt/package.json ./packages/stt/
 COPY packages/tts/package.json ./packages/tts/
 COPY packages/mcp-client/package.json ./packages/mcp-client/
 COPY packages/telephony/package.json ./packages/telephony/
+COPY packages/webrtc/package.json ./packages/webrtc/
+COPY packages/simulator/package.json ./packages/simulator/
+COPY packages/create-voice-agent/package.json ./packages/create-voice-agent/
 
 # Copy per-package tsconfig files
 COPY packages/core/tsconfig.json ./packages/core/
@@ -21,6 +24,9 @@ COPY packages/stt/tsconfig.json ./packages/stt/
 COPY packages/tts/tsconfig.json ./packages/tts/
 COPY packages/mcp-client/tsconfig.json ./packages/mcp-client/
 COPY packages/telephony/tsconfig.json ./packages/telephony/
+COPY packages/webrtc/tsconfig.json ./packages/webrtc/
+COPY packages/simulator/tsconfig.json ./packages/simulator/
+COPY packages/create-voice-agent/tsconfig.json ./packages/create-voice-agent/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -38,10 +44,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+RUN corepack enable && corepack prepare pnpm@10.22.0 --activate
 
 # Copy root workspace files
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* .npmrc ./
 
 # Copy package manifests
 COPY packages/core/package.json ./packages/core/
@@ -49,6 +55,9 @@ COPY packages/stt/package.json ./packages/stt/
 COPY packages/tts/package.json ./packages/tts/
 COPY packages/mcp-client/package.json ./packages/mcp-client/
 COPY packages/telephony/package.json ./packages/telephony/
+COPY packages/webrtc/package.json ./packages/webrtc/
+COPY packages/simulator/package.json ./packages/simulator/
+COPY packages/create-voice-agent/package.json ./packages/create-voice-agent/
 
 # Copy built outputs from builder
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
@@ -56,6 +65,9 @@ COPY --from=builder /app/packages/stt/dist ./packages/stt/dist
 COPY --from=builder /app/packages/tts/dist ./packages/tts/dist
 COPY --from=builder /app/packages/mcp-client/dist ./packages/mcp-client/dist
 COPY --from=builder /app/packages/telephony/dist ./packages/telephony/dist
+COPY --from=builder /app/packages/webrtc/dist ./packages/webrtc/dist
+COPY --from=builder /app/packages/simulator/dist ./packages/simulator/dist
+COPY --from=builder /app/packages/create-voice-agent/dist ./packages/create-voice-agent/dist
 
 # Copy node_modules
 COPY --from=builder /app/node_modules ./node_modules
