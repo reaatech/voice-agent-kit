@@ -1,15 +1,20 @@
 {
-  "TranscriptResult": {
-    "Transcripts": [
-      {
-        "Alternatives": [
-          {
-            "Transcript": "transfer fifty dollars to my savings account",
-            "Confidence": 0.937
-          }
-        ],
-        "IsPartial": false
-      }
-    ]
+  "TranscriptEvent": {
+    "Transcript": {
+      "Results": [
+        {
+          "ResultId": "result-0",
+          "StartTime": 0.0,
+          "EndTime": 2.14,
+          "IsPartial": false,
+          "Alternatives": [
+            {
+              "Transcript": "transfer fifty dollars to my savings account",
+              "Items": []
+            }
+          ]
+        }
+      ]
+    }
   }
 }

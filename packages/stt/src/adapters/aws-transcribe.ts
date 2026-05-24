@@ -167,36 +167,41 @@ export class AWSTranscribeProvider extends EventEmitter implements STTProvider {
 
     try {
       for await (const event of this.transcriptionStream) {
-        const typedEvent = event as { TranscriptResult?: { Transcripts?: unknown[] } };
-        if (typedEvent.TranscriptResult) {
-          const results = typedEvent.TranscriptResult.Transcripts;
+        // The streaming API yields a tagged union; transcripts arrive as
+        // `TranscriptEvent.Transcript.Results[]` (see @aws-sdk/client-transcribe-streaming
+        // `TranscriptResultStream`). Other members are exceptions/$unknown.
+        const typedEvent = event as {
+          TranscriptEvent?: { Transcript?: { Results?: unknown[] } };
+        };
+        const results = typedEvent.TranscriptEvent?.Transcript?.Results;
 
-          if (!results) {
-            continue;
-          }
+        if (!results) {
+          continue;
+        }
 
-          for (const result of results) {
-            const typedResult = result as {
-              Alternatives?: Array<{ Transcript?: string; Confidence?: number }>;
-              IsPartial?: boolean;
-            };
-            if (typedResult.Alternatives && typedResult.Alternatives.length > 0) {
-              const alternative = typedResult.Alternatives[0];
+        for (const result of results) {
+          // Streaming `Alternative` exposes `Transcript` and `Items` but no
+          // per-alternative confidence, so we surface a fixed confidence.
+          const typedResult = result as {
+            Alternatives?: Array<{ Transcript?: string }>;
+            IsPartial?: boolean;
+          };
+          if (typedResult.Alternatives && typedResult.Alternatives.length > 0) {
+            const alternative = typedResult.Alternatives[0];
 
-              if (alternative?.Transcript) {
-                const utterance: Utterance = {
-                  transcript: alternative.Transcript,
-                  confidence: alternative.Confidence ?? 0.9,
-                  isFinal: typedResult.IsPartial === false,
-                  timestamp: Date.now(),
-                };
+            if (alternative?.Transcript) {
+              const utterance: Utterance = {
+                transcript: alternative.Transcript,
+                confidence: 0.9,
+                isFinal: typedResult.IsPartial === false,
+                timestamp: Date.now(),
+              };
 
-                this.emit('utterance', utterance);
+              this.emit('utterance', utterance);
 
-                // Detect end of speech from final results
-                if (typedResult.IsPartial === false) {
-                  this.emit('endOfSpeech');
-                }
+              // Detect end of speech from final results
+              if (typedResult.IsPartial === false) {
+                this.emit('endOfSpeech');
               }
             }
           }
