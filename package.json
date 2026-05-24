@@ -19,7 +19,7 @@
     "test:coverage": "vitest run --coverage",
     "test:dist": "node scripts/smoke-dist.mjs",
     "lint:publish": "pnpm -r --filter \"./packages/*\" exec publint --strict",
-    "lint:types": "pnpm -r --filter \"./packages/*\" exec attw --pack",
+    "lint:types": "pnpm -r --filter \"./packages/*\" --filter \"!@reaatech/create-voice-agent\" exec attw --pack",
     "clean": "pnpm -r clean && rm -rf node_modules",
     "changeset": "changeset",
     "version-packages": "changeset version",

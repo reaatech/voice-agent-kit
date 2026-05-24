@@ -26,3 +26,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
+
+      - name: Verify package exports (publint)
+        run: pnpm lint:publish
+
+      - name: Smoke-test built output (ESM + CJS)
+        run: pnpm test:dist
