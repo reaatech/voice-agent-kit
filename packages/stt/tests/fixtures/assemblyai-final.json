@@ -1,0 +1,7 @@
+{
+  "message_type": "FinalTranscript",
+  "text": "book a table for two at seven pm",
+  "confidence": 0.9123,
+  "audio_start": 0,
+  "audio_end": 2200
+}
