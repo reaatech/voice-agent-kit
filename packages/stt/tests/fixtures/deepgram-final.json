@@ -1,0 +1,12 @@
+{
+  "channel": {
+    "alternatives": [
+      {
+        "transcript": "what is the weather in tokyo",
+        "confidence": 0.98741
+      }
+    ]
+  },
+  "is_final": true,
+  "speech_final": true
+}

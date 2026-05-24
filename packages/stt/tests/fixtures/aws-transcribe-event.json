@@ -1,0 +1,15 @@
+{
+  "TranscriptResult": {
+    "Transcripts": [
+      {
+        "Alternatives": [
+          {
+            "Transcript": "transfer fifty dollars to my savings account",
+            "Confidence": 0.937
+          }
+        ],
+        "IsPartial": false
+      }
+    ]
+  }
+}

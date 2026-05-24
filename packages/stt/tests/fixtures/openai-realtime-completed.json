@@ -1,0 +1,6 @@
+{
+  "type": "conversation.item.input_audio_transcription.completed",
+  "item_id": "item_ABC123",
+  "content_index": 0,
+  "transcript": "turn on the living room lights"
+}

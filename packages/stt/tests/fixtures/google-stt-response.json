@@ -1,0 +1,13 @@
+{
+  "results": [
+    {
+      "alternatives": [
+        {
+          "transcript": "schedule a meeting with the design team on friday",
+          "confidence": 0.9456
+        }
+      ],
+      "isFinal": true
+    }
+  ]
+}
