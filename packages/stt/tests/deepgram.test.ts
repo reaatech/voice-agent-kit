@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let lastWsInstance: any = null;
 
@@ -16,7 +16,7 @@ vi.mock('ws', () => {
     onclose: (() => void) | null = null;
     onerror: ((err: any) => void) | null = null;
 
-    constructor(url: string, opts?: any) {
+    constructor(_url: string, _opts?: any) {
       lastWsInstance = this;
       setTimeout(() => {
         if (this.onopen) this.onopen();
@@ -31,7 +31,7 @@ vi.mock('ws', () => {
     }
 
     send(_data: any) {}
-    close(code?: number) {
+    close(_code?: number) {
       this.readyState = 3;
       if (this.onclose) this.onclose();
     }
@@ -97,9 +97,9 @@ describe('DeepgramSTTProvider', () => {
     });
 
     it('should throw without API key', async () => {
-      await expect(
-        provider.connect({ provider: 'deepgram', sampleRate: 8000 }),
-      ).rejects.toThrow('Deepgram API key is required');
+      await expect(provider.connect({ provider: 'deepgram', sampleRate: 8000 })).rejects.toThrow(
+        'Deepgram API key is required',
+      );
     });
   });
 
@@ -153,7 +153,7 @@ describe('DeepgramSTTProvider', () => {
         sampleRate: 8000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(
             JSON.stringify({
@@ -183,7 +183,7 @@ describe('DeepgramSTTProvider', () => {
         sampleRate: 8000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(
             JSON.stringify({
@@ -208,7 +208,7 @@ describe('DeepgramSTTProvider', () => {
         sampleRate: 8000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(Buffer.from('invalid json'));
 
         expect(errorCb).toHaveBeenCalled();

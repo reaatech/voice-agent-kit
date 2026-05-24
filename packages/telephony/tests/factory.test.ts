@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { SignalWireTransport } from '../src/adapters/signalwire.js';
+import { TelnyxTransport } from '../src/adapters/telnyx.js';
+import { VonageTransport } from '../src/adapters/vonage.js';
 import {
+  createSignalWireTransport,
+  createTelnyxTransport,
   createTransport,
   createTwilioHandler,
-  createTelnyxTransport,
-  createSignalWireTransport,
   createVonageTransport,
 } from '../src/factory.js';
 import { TwilioMediaStreamHandler } from '../src/twilio-handler.js';
-import { TelnyxTransport } from '../src/adapters/telnyx.js';
-import { SignalWireTransport } from '../src/adapters/signalwire.js';
-import { VonageTransport } from '../src/adapters/vonage.js';
 
 describe('Telephony Factory', () => {
   describe('createTransport', () => {
@@ -43,9 +43,7 @@ describe('Telephony Factory', () => {
     });
 
     it('should throw for unknown transport type', () => {
-      expect(() =>
-        createTransport('unknown' as any),
-      ).toThrow('Unknown transport type: unknown');
+      expect(() => createTransport('unknown' as any)).toThrow('Unknown transport type: unknown');
     });
   });
 

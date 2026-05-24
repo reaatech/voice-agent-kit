@@ -1,12 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RecordingManager } from '../src/recording/index.js';
-import type {
-  AudioChunk,
-  CallRecording,
-  PipelineEvent,
-  RecordingConfig,
-  TurnRecord,
-} from '../src/types/index.js';
+import type { AudioChunk, PipelineEvent, RecordingConfig, TurnRecord } from '../src/types/index.js';
 
 function createChunk(overrides: Partial<AudioChunk> = {}): AudioChunk {
   return {
@@ -86,20 +80,20 @@ describe('RecordingManager', () => {
 
       const recording = manager.getRecording('session-1');
       expect(recording).toBeDefined();
-      expect(recording!.sessionId).toBe('session-1');
-      expect(recording!.callSid).toBe('CA123');
-      expect(recording!.startTime).toBeGreaterThan(0);
-      expect(recording!.audioChunks).toEqual([]);
-      expect(recording!.turns).toEqual([]);
-      expect(recording!.events).toEqual([]);
-      expect(recording!.metadata).toEqual({});
+      expect(recording?.sessionId).toBe('session-1');
+      expect(recording?.callSid).toBe('CA123');
+      expect(recording?.startTime).toBeGreaterThan(0);
+      expect(recording?.audioChunks).toEqual([]);
+      expect(recording?.turns).toEqual([]);
+      expect(recording?.events).toEqual([]);
+      expect(recording?.metadata).toEqual({});
     });
 
     it('should accept optional metadata', () => {
       manager.startRecording('session-1', 'CA123', { callerName: 'John', region: 'us-east' });
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.metadata).toEqual({ callerName: 'John', region: 'us-east' });
+      expect(recording?.metadata).toEqual({ callerName: 'John', region: 'us-east' });
     });
 
     it('should emit recording:started event', () => {
@@ -125,7 +119,7 @@ describe('RecordingManager', () => {
       manager.startRecording('session-1', 'CA456');
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.callSid).toBe('CA123');
+      expect(recording?.callSid).toBe('CA123');
     });
   });
 
@@ -137,8 +131,8 @@ describe('RecordingManager', () => {
       manager.recordAudioChunk('session-1', chunk, 'inbound');
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.audioChunks).toHaveLength(1);
-      expect(recording!.audioChunks[0]).toBe(chunk);
+      expect(recording?.audioChunks).toHaveLength(1);
+      expect(recording?.audioChunks[0]).toBe(chunk);
     });
 
     it('should record an outbound audio chunk', () => {
@@ -148,7 +142,7 @@ describe('RecordingManager', () => {
       manager.recordAudioChunk('session-1', chunk, 'outbound');
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.audioChunks).toHaveLength(1);
+      expect(recording?.audioChunks).toHaveLength(1);
     });
 
     it('should record multiple chunks', () => {
@@ -159,7 +153,7 @@ describe('RecordingManager', () => {
       manager.recordAudioChunk('session-1', createChunk(), 'inbound');
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.audioChunks).toHaveLength(3);
+      expect(recording?.audioChunks).toHaveLength(3);
     });
 
     it('should emit recording:audio event', () => {
@@ -195,7 +189,7 @@ describe('RecordingManager', () => {
       noAudioManager.recordAudioChunk('session-1', createChunk(), 'inbound');
 
       const recording = noAudioManager.getRecording('session-1');
-      expect(recording!.audioChunks).toHaveLength(0);
+      expect(recording?.audioChunks).toHaveLength(0);
       noAudioManager.destroy();
     });
   });
@@ -208,8 +202,8 @@ describe('RecordingManager', () => {
       manager.recordTurn('session-1', turn);
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.turns).toHaveLength(1);
-      expect(recording!.turns[0]).toBe(turn);
+      expect(recording?.turns).toHaveLength(1);
+      expect(recording?.turns[0]).toBe(turn);
     });
 
     it('should record multiple turns', () => {
@@ -219,7 +213,7 @@ describe('RecordingManager', () => {
       manager.recordTurn('session-1', createTurn('turn-2'));
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.turns).toHaveLength(2);
+      expect(recording?.turns).toHaveLength(2);
     });
 
     it('should emit recording:turn event', () => {
@@ -250,8 +244,8 @@ describe('RecordingManager', () => {
       manager.recordEvent('session-1', event);
 
       const recording = manager.getRecording('session-1');
-      expect(recording!.events).toHaveLength(1);
-      expect(recording!.events[0]).toBe(event);
+      expect(recording?.events).toHaveLength(1);
+      expect(recording?.events[0]).toBe(event);
     });
 
     it('should silently ignore non-existent session', () => {
@@ -271,7 +265,7 @@ describe('RecordingManager', () => {
       noEventsManager.recordEvent('session-1', createEvent('session-1', 'pipeline:start'));
 
       const recording = noEventsManager.getRecording('session-1');
-      expect(recording!.events).toHaveLength(0);
+      expect(recording?.events).toHaveLength(0);
       noEventsManager.destroy();
     });
   });
@@ -353,7 +347,7 @@ describe('RecordingManager', () => {
 
       const recording = manager.getRecording('session-1');
       expect(recording).toBeDefined();
-      expect(recording!.endTime).toBeDefined();
+      expect(recording?.endTime).toBeDefined();
     });
   });
 

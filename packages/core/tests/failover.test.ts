@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { FailoverManager } from '../src/providers/failover.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CompositeProviderOptions } from '../src/providers/failover.js';
+import { FailoverManager } from '../src/providers/failover.js';
 
 function makeOptions(overrides?: Partial<CompositeProviderOptions>): CompositeProviderOptions {
   return {
@@ -283,10 +283,12 @@ describe('FailoverManager', () => {
 
     it('should not create duplicate timers', () => {
       fm.startPeriodicHealthCheck();
-      const timer1 = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> }).healthCheckTimer;
+      const timer1 = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> })
+        .healthCheckTimer;
 
       fm.startPeriodicHealthCheck();
-      const timer2 = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> }).healthCheckTimer;
+      const timer2 = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> })
+        .healthCheckTimer;
 
       expect(timer1).toBe(timer2);
     });
@@ -295,7 +297,9 @@ describe('FailoverManager', () => {
       fm.startPeriodicHealthCheck();
       fm.stopPeriodicHealthCheck();
 
-      const timer = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> | undefined }).healthCheckTimer;
+      const timer = (
+        fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> | undefined }
+      ).healthCheckTimer;
       expect(timer).toBeUndefined();
     });
   });
@@ -322,7 +326,9 @@ describe('FailoverManager', () => {
       fm.startPeriodicHealthCheck();
       fm.destroy();
 
-      const timer = (fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> | undefined }).healthCheckTimer;
+      const timer = (
+        fm as unknown as { healthCheckTimer: ReturnType<typeof setInterval> | undefined }
+      ).healthCheckTimer;
       expect(timer).toBeUndefined();
 
       expect(fm.getAllHealth()).toHaveLength(0);

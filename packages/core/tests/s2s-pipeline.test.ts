@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SpeechToSpeechPipeline, createSpeechToSpeechPipeline } from '../src/pipeline/s2s-pipeline.js';
 import type { S2SPipelineDependencies, S2SProvider } from '../src/pipeline/s2s-pipeline.js';
-import type { AudioChunk, AgentResponse, Utterance } from '../src/types/index.js';
+import {
+  createSpeechToSpeechPipeline,
+  SpeechToSpeechPipeline,
+} from '../src/pipeline/s2s-pipeline.js';
+import type { AgentResponse, AudioChunk, Utterance } from '../src/types/index.js';
 
 function createMockS2SProvider(): S2SProvider & {
   triggerAudioOutput: (chunk: AudioChunk) => void;
@@ -113,7 +116,12 @@ function createMockConfig() {
     tts: { provider: 'deepgram', speed: 1.0 },
     latency: { total: { target: 800, hardCap: 1200 }, stages: { stt: 200, mcp: 400, tts: 200 } },
     session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-    bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
+    bargeIn: {
+      enabled: true,
+      minSpeechDuration: 300,
+      confidenceThreshold: 0.7,
+      silenceThreshold: 0.3,
+    },
     speechToSpeech: { provider: 'openai-realtime' },
     mode: 'speech-to-speech',
   };
@@ -121,8 +129,10 @@ function createMockConfig() {
 
 function createDependencies(): S2SPipelineDependencies {
   return {
-    sessionManager: createMockSessionManager() as unknown as S2SPipelineDependencies['sessionManager'],
-    latencyEnforcer: createMockLatencyEnforcer() as unknown as S2SPipelineDependencies['latencyEnforcer'],
+    sessionManager:
+      createMockSessionManager() as unknown as S2SPipelineDependencies['sessionManager'],
+    latencyEnforcer:
+      createMockLatencyEnforcer() as unknown as S2SPipelineDependencies['latencyEnforcer'],
     provider: createMockS2SProvider() as unknown as S2SPipelineDependencies['provider'],
     config: createMockConfig() as unknown as S2SPipelineDependencies['config'],
   };
@@ -179,14 +189,16 @@ describe('SpeechToSpeechPipeline', () => {
       (deps.config as any).speechToSpeech = undefined;
       const p = new SpeechToSpeechPipeline(deps);
 
-      await expect(
-        p.startSession({ sessionId: 'session-1', status: 'active' }),
-      ).rejects.toThrow('SpeechToSpeech config is required');
+      await expect(p.startSession({ sessionId: 'session-1', status: 'active' })).rejects.toThrow(
+        'SpeechToSpeech config is required',
+      );
       p.destroy();
     });
 
     it('should emit error on provider connect failure', async () => {
-      (provider.connect as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('S2S connection failed'));
+      (provider.connect as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new Error('S2S connection failed'),
+      );
 
       const errorHandler = vi.fn();
       pipeline.on('pipeline:error', errorHandler);

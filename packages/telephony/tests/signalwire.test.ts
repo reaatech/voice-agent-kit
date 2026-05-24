@@ -85,7 +85,9 @@ describe('SignalWireTransport', () => {
 
     it('should generate correct WebSocket endpoint with projectId', () => {
       const custom = new SignalWireTransport({ projectId: 'proj-123' });
-      expect(custom.getWebSocketEndpoint()).toBe('wss://proj-123.signalwire.com/api/relay/rest/streams');
+      expect(custom.getWebSocketEndpoint()).toBe(
+        'wss://proj-123.signalwire.com/api/relay/rest/streams',
+      );
     });
 
     it('should have null initial identifiers', () => {
@@ -144,15 +146,17 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: {
-            callSid: 'CA123',
-            streamSid: 'MS123',
-            codec: { name: 'mulaw', payload_type: 0, clock_rate: 8000 },
-            customParameters: { foo: 'bar' },
-          },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: {
+              callSid: 'CA123',
+              streamSid: 'MS123',
+              codec: { name: 'mulaw', payload_type: 0, clock_rate: 8000 },
+              customParameters: { foo: 'bar' },
+            },
+          }),
+        ),
       );
 
       expect(sessionStarts.length).toBe(1);
@@ -175,15 +179,17 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: {
-            callId: 'call-456',
-            streamId: 'stream-789',
-            codec: 'opus',
-            customParameters: {},
-          },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: {
+              callId: 'call-456',
+              streamId: 'stream-789',
+              codec: 'opus',
+              customParameters: {},
+            },
+          }),
+        ),
       );
 
       expect(sessionStarts[0].sessionId).toBe('call-456');
@@ -198,13 +204,15 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: {
-            codec: 'mulaw',
-            customParameters: {},
-          },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: {
+              codec: 'mulaw',
+              customParameters: {},
+            },
+          }),
+        ),
       );
 
       expect(sessionStarts[0].sessionId).toBe('unknown');
@@ -217,10 +225,12 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callSid: 'CA123', codec: 'opus', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callSid: 'CA123', codec: 'opus', customParameters: {} },
+          }),
+        ),
       );
 
       expect(sessionStarts[0].codec).toBe('opus');
@@ -234,12 +244,14 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'media',
-          streamSid: 'MS123',
-          media: { payload: Buffer.from([0x00, 0x01]).toString('base64'), timestamp: '123' },
-          track: 'inbound',
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'media',
+            streamSid: 'MS123',
+            media: { payload: Buffer.from([0x00, 0x01]).toString('base64'), timestamp: '123' },
+            track: 'inbound',
+          }),
+        ),
       );
 
       expect(audioEvents.length).toBe(1);
@@ -257,16 +269,20 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+          }),
+        ),
       );
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'stop',
-          stop: { callSid: 'CA123' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'stop',
+            stop: { callSid: 'CA123' },
+          }),
+        ),
       );
 
       expect(sessionEnds.length).toBe(1);
@@ -281,16 +297,20 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callId: 'call-456', codec: 'mulaw', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callId: 'call-456', codec: 'mulaw', customParameters: {} },
+          }),
+        ),
       );
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'stop',
-          stop: { callId: 'call-456' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'stop',
+            stop: { callId: 'call-456' },
+          }),
+        ),
       );
 
       expect(sessionEnds[0].sessionId).toBe('call-456');
@@ -303,11 +323,13 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'mark',
-          streamSid: 'MS123',
-          mark: { name: 'test-mark' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'mark',
+            streamSid: 'MS123',
+            mark: { name: 'test-mark' },
+          }),
+        ),
       );
 
       expect(markEvents.length).toBe(1);
@@ -321,11 +343,13 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'mark',
-          streamId: 'stream-789',
-          mark: { name: 'test-mark' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'mark',
+            streamId: 'stream-789',
+            mark: { name: 'test-mark' },
+          }),
+        ),
       );
 
       expect(markEvents[0].streamSid).toBe('stream-789');
@@ -338,11 +362,13 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'dtmf',
-          streamSid: 'MS123',
-          dtmf: { digit: '7' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'dtmf',
+            streamSid: 'MS123',
+            dtmf: { digit: '7' },
+          }),
+        ),
       );
 
       expect(dtmfEvents.length).toBe(1);
@@ -367,10 +393,12 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+          }),
+        ),
       );
 
       const chunk = {
@@ -410,10 +438,12 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+          }),
+        ),
       );
 
       const markName = await transport.sendMark();
@@ -436,10 +466,12 @@ describe('SignalWireTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+          }),
+        ),
       );
 
       transport.setTTSPlaying(true);
@@ -458,7 +490,12 @@ describe('SignalWireTransport', () => {
 
   describe('Barge-in', () => {
     it('should trigger barge-in after min duration', () => {
-      const custom = new SignalWireTransport({ bargeInEnabled: true, minSpeechDuration: 0, confidenceThreshold: 0.5, silenceThreshold: 0.3 });
+      const custom = new SignalWireTransport({
+        bargeInEnabled: true,
+        minSpeechDuration: 0,
+        confidenceThreshold: 0.5,
+        silenceThreshold: 0.3,
+      });
       custom.setTTSPlaying(true);
 
       const bargeInEvents: any[] = [];

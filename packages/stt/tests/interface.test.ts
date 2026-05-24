@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeepgramSTTProvider } from '../src/adapters/deepgram.js';
-import { STTProviderInterface } from '../src/interface.js';
 import type { STTProvider } from '../src/interface.js';
+import { STTProviderInterface } from '../src/interface.js';
 
 describe('STTProvider Interface', () => {
   describe('DeepgramSTTProvider', () => {

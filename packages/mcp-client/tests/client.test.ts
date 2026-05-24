@@ -123,12 +123,11 @@ describe('MCPClient', () => {
           ok: true,
           status: 200,
           statusText: 'OK',
-          json: () => Promise.resolve({
-            content: [],
-            toolCalls: [
-              { name: 'get_weather', arguments: { description: 'Get weather data' } },
-            ],
-          }),
+          json: () =>
+            Promise.resolve({
+              content: [],
+              toolCalls: [{ name: 'get_weather', arguments: { description: 'Get weather data' } }],
+            }),
         } as Response)
         .mockResolvedValueOnce(mockFetchResponse());
 
@@ -145,12 +144,11 @@ describe('MCPClient', () => {
           ok: true,
           status: 200,
           statusText: 'OK',
-          json: () => Promise.resolve({
-            content: [],
-            toolCalls: [
-              { name: 'get_weather', arguments: { param1: 'value1' } },
-            ],
-          }),
+          json: () =>
+            Promise.resolve({
+              content: [],
+              toolCalls: [{ name: 'get_weather', arguments: { param1: 'value1' } }],
+            }),
         } as Response)
         .mockResolvedValueOnce(mockFetchResponse());
 
@@ -164,9 +162,10 @@ describe('MCPClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: () => Promise.resolve({
-          content: [{ type: 'text', text: 'Hello <script>alert("xss")</script> world' }],
-        }),
+        json: () =>
+          Promise.resolve({
+            content: [{ type: 'text', text: 'Hello <script>alert("xss")</script> world' }],
+          }),
       } as Response);
 
       await client.connect();
@@ -185,9 +184,10 @@ describe('MCPClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: () => Promise.resolve({
-          content: [{ type: 'text', text: 'Click [here](https://example.com) for info' }],
-        }),
+        json: () =>
+          Promise.resolve({
+            content: [{ type: 'text', text: 'Click [here](https://example.com) for info' }],
+          }),
       } as Response);
 
       await client.connect();
@@ -206,9 +206,12 @@ describe('MCPClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: () => Promise.resolve({
-          content: [{ type: 'text', text: 'AT&amp;T &lt;test&gt; &quot;quote&quot; &amp; &#39;ok&#39;' }],
-        }),
+        json: () =>
+          Promise.resolve({
+            content: [
+              { type: 'text', text: 'AT&amp;T &lt;test&gt; &quot;quote&quot; &amp; &#39;ok&#39;' },
+            ],
+          }),
       } as Response);
 
       await client.connect();
@@ -379,9 +382,7 @@ describe('MCPClient', () => {
       fetchMock.mockResolvedValueOnce(mockFetchResponse());
       await retryClient.connect();
 
-      fetchMock
-        .mockRejectedValueOnce(abortError)
-        .mockResolvedValueOnce(mockFetchResponse());
+      fetchMock.mockRejectedValueOnce(abortError).mockResolvedValueOnce(mockFetchResponse());
 
       const response = await retryClient.sendRequest({
         utterance: 'test',
@@ -406,9 +407,7 @@ describe('MCPClient', () => {
       fetchMock.mockResolvedValueOnce(mockFetchResponse());
       await retryClient.connect();
 
-      fetchMock
-        .mockRejectedValueOnce(typeError)
-        .mockResolvedValueOnce(mockFetchResponse());
+      fetchMock.mockRejectedValueOnce(typeError).mockResolvedValueOnce(mockFetchResponse());
 
       const response = await retryClient.sendRequest({
         utterance: 'test',
@@ -485,8 +484,6 @@ describe('MCPClient', () => {
         }),
       ).rejects.toThrow('MCP request failed');
     });
-
-
   });
 
   describe('Tool Discovery', () => {
@@ -495,13 +492,14 @@ describe('MCPClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: () => Promise.resolve({
-          content: [],
-          toolCalls: [
-            { name: 'tool1', arguments: { description: 'Tool 1' } },
-            { name: 'tool2', arguments: { description: 'Tool 2' } },
-          ],
-        }),
+        json: () =>
+          Promise.resolve({
+            content: [],
+            toolCalls: [
+              { name: 'tool1', arguments: { description: 'Tool 1' } },
+              { name: 'tool2', arguments: { description: 'Tool 2' } },
+            ],
+          }),
       } as Response);
 
       const tools = await client.discoverTools();
@@ -627,10 +625,11 @@ describe('MCPClient', () => {
         ok: true,
         status: 200,
         statusText: 'OK',
-        json: () => Promise.resolve({
-          content: [],
-          toolCalls: [{ name: 'tool1', arguments: {} }],
-        }),
+        json: () =>
+          Promise.resolve({
+            content: [],
+            toolCalls: [{ name: 'tool1', arguments: {} }],
+          }),
       } as Response);
 
       await client.discoverTools();

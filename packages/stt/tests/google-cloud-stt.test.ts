@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const streamHandlers: Record<string, Function[]> = {};
 
@@ -28,7 +28,9 @@ describe('GoogleCloudSTTProvider', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    Object.keys(streamHandlers).forEach((k) => delete streamHandlers[k]);
+    for (const k of Object.keys(streamHandlers)) {
+      delete streamHandlers[k];
+    }
     const mod = await import('../src/adapters/google-cloud-stt.js');
     GoogleCloudSTTProvider = mod.GoogleCloudSTTProvider;
     provider = new GoogleCloudSTTProvider();
@@ -39,7 +41,7 @@ describe('GoogleCloudSTTProvider', () => {
   });
 
   function fireDataEvent(data: unknown) {
-    const handlers = streamHandlers['data'];
+    const handlers = streamHandlers.data;
     if (handlers) {
       for (const h of handlers) {
         h(data);
@@ -48,7 +50,7 @@ describe('GoogleCloudSTTProvider', () => {
   }
 
   function fireErrorEvent(error: Error) {
-    const handlers = streamHandlers['error'];
+    const handlers = streamHandlers.error;
     if (handlers) {
       for (const h of handlers) {
         h(error);
@@ -265,7 +267,12 @@ describe('GoogleCloudSTTProvider', () => {
     it('should register utterance callback', () => {
       const cb = vi.fn();
       provider.onUtterance(cb);
-      provider.emit('utterance', { transcript: 'test', confidence: 0.9, isFinal: true, timestamp: Date.now() });
+      provider.emit('utterance', {
+        transcript: 'test',
+        confidence: 0.9,
+        isFinal: true,
+        timestamp: Date.now(),
+      });
       expect(cb).toHaveBeenCalled();
     });
 

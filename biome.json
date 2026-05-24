@@ -30,6 +30,15 @@
         "rules": {
           "suspicious": {
             "noExplicitAny": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noBannedTypes": "off"
+          },
+          "correctness": {
+            "useYield": "off"
           }
         }
       }

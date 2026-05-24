@@ -153,7 +153,8 @@ describe('TTSProvider Interface', () => {
       });
 
       it('should handle text without punctuation', () => {
-        const text = 'this is a long string with no punctuation that should exceed the default max chunk size';
+        const text =
+          'this is a long string with no punctuation that should exceed the default max chunk size';
         const chunks = TTSProviderInterface.chunkTextForStreaming(text, 20);
         expect(chunks.length).toBeGreaterThanOrEqual(1);
         expect(chunks.some((c) => c.length > 0)).toBe(true);

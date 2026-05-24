@@ -1,5 +1,5 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const validChunk: AudioChunk = {
   buffer: Buffer.alloc(3200),
@@ -114,10 +114,7 @@ describe('GroqWhisperSTTProvider', () => {
     });
 
     it('should handle fetch error gracefully on close', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockRejectedValue(new Error('Network error')),
-      );
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 
       const errorCb = vi.fn();
       provider.onError(errorCb);
@@ -134,10 +131,13 @@ describe('GroqWhisperSTTProvider', () => {
       await provider.close();
 
       expect(errorCb).toHaveBeenCalled();
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ text: 'transcribed text' }),
-      }));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ text: 'transcribed text' }),
+        }),
+      );
     });
   });
 
@@ -158,7 +158,12 @@ describe('GroqWhisperSTTProvider', () => {
     it('should register utterance callback', () => {
       const cb = vi.fn();
       provider.onUtterance(cb);
-      provider.emit('utterance', { transcript: 'test', confidence: 0.9, isFinal: true, timestamp: Date.now() });
+      provider.emit('utterance', {
+        transcript: 'test',
+        confidence: 0.9,
+        isFinal: true,
+        timestamp: Date.now(),
+      });
       expect(cb).toHaveBeenCalled();
     });
 

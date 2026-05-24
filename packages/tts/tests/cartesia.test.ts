@@ -49,9 +49,9 @@ describe('CartesiaTTSProvider', () => {
     });
 
     it('should throw on missing API key', async () => {
-      await expect(
-        provider.connect({ provider: 'cartesia' }),
-      ).rejects.toThrow('Cartesia API key is required');
+      await expect(provider.connect({ provider: 'cartesia' })).rejects.toThrow(
+        'Cartesia API key is required',
+      );
     });
 
     it('should use env var for API key', async () => {
@@ -242,23 +242,24 @@ describe('CartesiaTTSProvider', () => {
 
   describe('cancel', () => {
     it('should abort in-progress synthesis', async () => {
-      const fetchSpy = vi.fn().mockImplementation((_url, options) =>
-        new Promise<Response>((_resolve, reject) => {
-          const signal = (options as RequestInit)?.signal as AbortSignal | undefined;
-          if (signal) {
-            if (signal.aborted) {
-              const err = new Error('The operation was aborted');
-              err.name = 'AbortError';
-              reject(err);
-              return;
+      const fetchSpy = vi.fn().mockImplementation(
+        (_url, options) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = (options as RequestInit)?.signal as AbortSignal | undefined;
+            if (signal) {
+              if (signal.aborted) {
+                const err = new Error('The operation was aborted');
+                err.name = 'AbortError';
+                reject(err);
+                return;
+              }
+              signal.addEventListener('abort', () => {
+                const err = new Error('The operation was aborted');
+                err.name = 'AbortError';
+                reject(err);
+              });
             }
-            signal.addEventListener('abort', () => {
-              const err = new Error('The operation was aborted');
-              err.name = 'AbortError';
-              reject(err);
-            });
-          }
-        }),
+          }),
       );
       vi.stubGlobal('fetch', fetchSpy);
 

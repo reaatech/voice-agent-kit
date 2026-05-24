@@ -1,7 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
 import { EventEmitter } from 'events';
+import { describe, expect, it, vi } from 'vitest';
+import type {
+  Transport,
+  TransportConfig,
+  TransportSessionMetadata,
+  TransportType,
+} from '../src/transport/index.js';
 import type { AudioChunk } from '../src/types/index.js';
-import type { Transport, TransportSessionMetadata, TransportConfig, TransportType } from '../src/transport/index.js';
 
 describe('Transport', () => {
   it('should be implementable with all required members', () => {
@@ -43,7 +48,9 @@ describe('Transport', () => {
       async acceptConnection(_connection: unknown): Promise<void> {}
       sendAudio(_chunk: AudioChunk): void {}
       async clearAudio(): Promise<void> {}
-      getSessionId(): string | null { return null; }
+      getSessionId(): string | null {
+        return null;
+      }
       async close(): Promise<void> {}
     })();
 
@@ -61,8 +68,12 @@ describe('Transport', () => {
       async acceptConnection(_connection: unknown): Promise<void> {}
       sendAudio(_chunk: AudioChunk): void {}
       async clearAudio(): Promise<void> {}
-      getSessionId(): string | null { return this.sessionId; }
-      async close(): Promise<void> { this.isConnected = false; }
+      getSessionId(): string | null {
+        return this.sessionId;
+      }
+      async close(): Promise<void> {
+        this.isConnected = false;
+      }
     })();
 
     expect(transport.getSessionId()).toBe('session-abc-123');
@@ -77,7 +88,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return null; }
+        getSessionId(): string | null {
+          return null;
+        }
         async close(): Promise<void> {}
 
         emitConnected(): void {
@@ -100,7 +113,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return null; }
+        getSessionId(): string | null {
+          return null;
+        }
         async close(): Promise<void> {}
 
         emitDisconnected(): void {
@@ -123,7 +138,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return null; }
+        getSessionId(): string | null {
+          return null;
+        }
         async close(): Promise<void> {}
 
         receiveAudio(chunk: AudioChunk): void {
@@ -154,7 +171,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return 'session-1'; }
+        getSessionId(): string | null {
+          return 'session-1';
+        }
         async close(): Promise<void> {}
 
         startSession(metadata: TransportSessionMetadata): void {
@@ -183,7 +202,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return 'session-1'; }
+        getSessionId(): string | null {
+          return 'session-1';
+        }
         async close(): Promise<void> {}
 
         endSession(): void {
@@ -206,7 +227,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return null; }
+        getSessionId(): string | null {
+          return null;
+        }
         async close(): Promise<void> {}
 
         fail(error: Error): void {
@@ -230,7 +253,9 @@ describe('Transport', () => {
         async acceptConnection(_connection: unknown): Promise<void> {}
         sendAudio(_chunk: AudioChunk): void {}
         async clearAudio(): Promise<void> {}
-        getSessionId(): string | null { return null; }
+        getSessionId(): string | null {
+          return null;
+        }
         async close(): Promise<void> {}
       })();
 

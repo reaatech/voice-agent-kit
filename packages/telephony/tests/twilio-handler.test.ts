@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TwilioMediaStreamHandler } from '../src/twilio-handler.js';
-import type { AudioChunk } from '@reaatech/voice-agent-core';
 
 function createMockWs(handlers?: {
   onOpen?: () => void;
@@ -432,10 +431,20 @@ describe('TwilioMediaStreamHandler', () => {
       const mockWs = {
         readyState: 1,
         on: vi.fn((event: string, cb: any) => {
-          if (event === 'message') cb(Buffer.from(JSON.stringify({
-            event: 'start',
-            start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-          })));
+          if (event === 'message')
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                }),
+              ),
+            );
         }),
         off: vi.fn(),
         removeAllListeners: vi.fn(),
@@ -554,7 +563,9 @@ describe('TwilioMediaStreamHandler', () => {
 
     it('should not send audio when no streamSid', () => {
       const mockWs = {
-        on: vi.fn((event: string, cb: any) => { if (event === 'open') cb(); }),
+        on: vi.fn((event: string, cb: any) => {
+          if (event === 'open') cb();
+        }),
         off: vi.fn(),
         send: vi.fn(),
       } as any;
@@ -581,7 +592,12 @@ describe('TwilioMediaStreamHandler', () => {
               Buffer.from(
                 JSON.stringify({
                   event: 'start',
-                  start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
                 }),
               ),
             );
@@ -607,7 +623,9 @@ describe('TwilioMediaStreamHandler', () => {
 
     it('should not clear audio when no streamSid', async () => {
       const mockWs = {
-        on: vi.fn((event: string, cb: any) => { if (event === 'open') cb(); }),
+        on: vi.fn((event: string, cb: any) => {
+          if (event === 'open') cb();
+        }),
         off: vi.fn(),
         send: vi.fn(),
       } as any;
@@ -627,7 +645,12 @@ describe('TwilioMediaStreamHandler', () => {
               Buffer.from(
                 JSON.stringify({
                   event: 'start',
-                  start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
                 }),
               ),
             );
@@ -661,7 +684,12 @@ describe('TwilioMediaStreamHandler', () => {
               Buffer.from(
                 JSON.stringify({
                   event: 'start',
-                  start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
                 }),
               ),
             );
@@ -680,7 +708,9 @@ describe('TwilioMediaStreamHandler', () => {
 
     it('should return empty string when no streamSid', async () => {
       const mockWs = {
-        on: vi.fn((event: string, cb: any) => { if (event === 'open') cb(); }),
+        on: vi.fn((event: string, cb: any) => {
+          if (event === 'open') cb();
+        }),
         off: vi.fn(),
         send: vi.fn(),
       } as any;
@@ -995,10 +1025,19 @@ describe('TwilioMediaStreamHandler', () => {
         on: vi.fn((event: string, cb: any) => {
           if (event === 'open') cb();
           if (event === 'message')
-            cb(Buffer.from(JSON.stringify({
-              event: 'start',
-              start: { callSid: 'CA123', streamSid: 'MS123', codec: 'mulaw', customParameters: {} },
-            })));
+            cb(
+              Buffer.from(
+                JSON.stringify({
+                  event: 'start',
+                  start: {
+                    callSid: 'CA123',
+                    streamSid: 'MS123',
+                    codec: 'mulaw',
+                    customParameters: {},
+                  },
+                }),
+              ),
+            );
         }),
         off: vi.fn(),
         send: vi.fn(),

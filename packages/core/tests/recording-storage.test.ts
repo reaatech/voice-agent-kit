@@ -1,10 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { CallRecording } from '../src/types/index.js';
-import { writeSessionJson, writeTranscriptFile, writeWavFile } from '../src/recording/index.js';
-import { MemoryStorage } from '../src/recording/index.js';
+import { describe, expect, it } from 'vitest';
+import {
+  MemoryStorage,
+  writeSessionJson,
+  writeTranscriptFile,
+  writeWavFile,
+} from '../src/recording/index.js';
 import { FileSystemStorage } from '../src/recording/storage/filesystem-storage.js';
 import { S3Storage } from '../src/recording/storage/s3-storage.js';
-import type { AudioChunk, TurnRecord } from '../src/types/index.js';
+import type { AudioChunk, CallRecording, TurnRecord } from '../src/types/index.js';
 
 function createRecording(sessionId: string, overrides: Partial<CallRecording> = {}): CallRecording {
   return {
@@ -57,8 +60,8 @@ describe('MemoryStorage', () => {
 
     const retrieved = storage.get('session-1');
     expect(retrieved).toBeDefined();
-    expect(retrieved!.sessionId).toBe('session-1');
-    expect(retrieved!.callSid).toBe('CA-session-1');
+    expect(retrieved?.sessionId).toBe('session-1');
+    expect(retrieved?.callSid).toBe('CA-session-1');
   });
 
   it('should return undefined for non-existent recording', () => {
@@ -315,9 +318,7 @@ describe('writeTranscriptFile', () => {
         agentResponse: 'It is sunny.',
         startTime: 1000,
         latencyMs: 200,
-        toolCalls: [
-          { name: 'get_weather', arguments: { city: 'NYC' }, result: { temp: 72 } },
-        ],
+        toolCalls: [{ name: 'get_weather', arguments: { city: 'NYC' }, result: { temp: 72 } }],
       },
     ];
 

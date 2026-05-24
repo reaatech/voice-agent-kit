@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TelnyxTransport } from '../src/adapters/telnyx.js';
 
-function createMockWs(handlers?: {
-  onOpen?: () => void;
-  onMessage?: (data: Buffer) => void;
-}) {
+function createMockWs(handlers?: { onOpen?: () => void; onMessage?: (data: Buffer) => void }) {
   const listeners: Record<string, (...args: unknown[]) => void> = {};
   const mock = {
     readyState: 1,
@@ -153,15 +150,17 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: {
-            call_control_id: 'CC123',
-            stream_id: 'STREAM123',
-            codec: 'PCMU',
-            custom_parameters: { foo: 'bar' },
-          },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: {
+              call_control_id: 'CC123',
+              stream_id: 'STREAM123',
+              codec: 'PCMU',
+              custom_parameters: { foo: 'bar' },
+            },
+          }),
+        ),
       );
 
       expect(sessionStarts.length).toBe(1);
@@ -187,13 +186,15 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: {
-            call_control_id: 'CC123',
-            stream_id: 'STREAM123',
-          },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: {
+              call_control_id: 'CC123',
+              stream_id: 'STREAM123',
+            },
+          }),
+        ),
       );
 
       expect(sessionStarts[0].codec).toBe('PCMU');
@@ -206,11 +207,13 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'media',
-          stream_id: 'STREAM123',
-          media: { payload: Buffer.from([0x00, 0x01]).toString('base64') },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'media',
+            stream_id: 'STREAM123',
+            media: { payload: Buffer.from([0x00, 0x01]).toString('base64') },
+          }),
+        ),
       );
 
       expect(audioEvents.length).toBe(1);
@@ -231,17 +234,21 @@ describe('TelnyxTransport', () => {
       await transport.acceptConnection(mockWs as any);
       // Set up state first
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
+          }),
+        ),
       );
       // Then stop
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'stop',
-          stop: { call_control_id: 'CC123' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'stop',
+            stop: { call_control_id: 'CC123' },
+          }),
+        ),
       );
 
       expect(sessionEnds.length).toBe(1);
@@ -258,11 +265,13 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'dtmf',
-          stream_id: 'STREAM123',
-          dtmf: { digit: '3', duration: 200 },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'dtmf',
+            stream_id: 'STREAM123',
+            dtmf: { digit: '3', duration: 200 },
+          }),
+        ),
       );
 
       expect(dtmfEvents.length).toBe(1);
@@ -287,10 +296,12 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
+          }),
+        ),
       );
 
       const chunk = {
@@ -346,10 +357,12 @@ describe('TelnyxTransport', () => {
 
       await transport.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
+          }),
+        ),
       );
 
       transport.setTTSPlaying(true);
@@ -413,7 +426,12 @@ describe('TelnyxTransport', () => {
     });
 
     it('should reset speech start on empty transcript', () => {
-      const custom = new TelnyxTransport({ bargeInEnabled: true, minSpeechDuration: 0, confidenceThreshold: 0.5, silenceThreshold: 0.3 });
+      const custom = new TelnyxTransport({
+        bargeInEnabled: true,
+        minSpeechDuration: 0,
+        confidenceThreshold: 0.5,
+        silenceThreshold: 0.3,
+      });
       custom.setTTSPlaying(true);
 
       custom.onInterimTranscript('hello', 0.9);
@@ -431,14 +449,21 @@ describe('TelnyxTransport', () => {
     it('should emit barge-in with callControlId and streamId when available', async () => {
       const mockWs = createMockWs();
 
-      const custom = new TelnyxTransport({ bargeInEnabled: true, minSpeechDuration: 0, confidenceThreshold: 0.5, silenceThreshold: 0.3 });
+      const custom = new TelnyxTransport({
+        bargeInEnabled: true,
+        minSpeechDuration: 0,
+        confidenceThreshold: 0.5,
+        silenceThreshold: 0.3,
+      });
 
       await custom.acceptConnection(mockWs as any);
       (mockWs as any)._simulateMessage(
-        Buffer.from(JSON.stringify({
-          event: 'start',
-          start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
-        })),
+        Buffer.from(
+          JSON.stringify({
+            event: 'start',
+            start: { call_control_id: 'CC123', stream_id: 'STREAM123', codec: 'PCMU' },
+          }),
+        ),
       );
 
       custom.setTTSPlaying(true);

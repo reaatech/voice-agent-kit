@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-  ThinkingAudioManager,
   generateFillerTone,
   linear16ToMulaw,
+  ThinkingAudioManager,
 } from '../src/pipeline/thinking-audio.js';
 import type { AudioChunk } from '../src/types/index.js';
 
@@ -18,7 +18,13 @@ describe('ThinkingAudioManager', () => {
     it('should merge provided config with defaults', () => {
       const onSendAudio = vi.fn();
       const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'filler', fillerToneHz: 660, fillerVolume: 0.2, maxDurationMs: 500 },
+        {
+          enabled: true,
+          strategy: 'filler',
+          fillerToneHz: 660,
+          fillerVolume: 0.2,
+          maxDurationMs: 500,
+        },
         onSendAudio,
       );
 
@@ -29,10 +35,7 @@ describe('ThinkingAudioManager', () => {
   describe('startThinking with strategy: none', () => {
     it('should not start when strategy is none', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'none' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'none' }, onSendAudio);
 
       await manager.startThinking('turn-1');
 
@@ -42,10 +45,7 @@ describe('ThinkingAudioManager', () => {
 
     it('should not start when disabled', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: false, strategy: 'filler' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: false, strategy: 'filler' }, onSendAudio);
 
       await manager.startThinking('turn-1');
 
@@ -57,10 +57,7 @@ describe('ThinkingAudioManager', () => {
   describe('startThinking with strategy: silence', () => {
     it('should send a silence chunk', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       await manager.startThinking('turn-1');
 
@@ -78,7 +75,13 @@ describe('ThinkingAudioManager', () => {
       vi.useFakeTimers();
       const onSendAudio = vi.fn();
       const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'filler', fillerToneHz: 440, fillerVolume: 0.1, maxDurationMs: 500 },
+        {
+          enabled: true,
+          strategy: 'filler',
+          fillerToneHz: 440,
+          fillerVolume: 0.1,
+          maxDurationMs: 500,
+        },
         onSendAudio,
       );
 
@@ -107,7 +110,13 @@ describe('ThinkingAudioManager', () => {
     it('should send mulaw encoded audio chunks', async () => {
       const onSendAudio = vi.fn();
       const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'filler', fillerToneHz: 440, fillerVolume: 0.1, maxDurationMs: 800 },
+        {
+          enabled: true,
+          strategy: 'filler',
+          fillerToneHz: 440,
+          fillerVolume: 0.1,
+          maxDurationMs: 800,
+        },
         onSendAudio,
       );
 
@@ -168,10 +177,7 @@ describe('ThinkingAudioManager', () => {
   describe('isActive', () => {
     it('should return false for non-existent turn', () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'none' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'none' }, onSendAudio);
 
       expect(manager.isActive('non-existent')).toBe(false);
       manager.destroy();
@@ -179,10 +185,7 @@ describe('ThinkingAudioManager', () => {
 
     it('should return true for an active turn', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       await manager.startThinking('turn-1');
 
@@ -194,10 +197,7 @@ describe('ThinkingAudioManager', () => {
   describe('stopThinking', () => {
     it('should stop a thinking turn', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       await manager.startThinking('turn-1');
       expect(manager.isActive('turn-1')).toBe(true);
@@ -209,10 +209,7 @@ describe('ThinkingAudioManager', () => {
 
     it('should do nothing for non-existent turn', () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       expect(() => manager.stopThinking('non-existent')).not.toThrow();
       manager.destroy();
@@ -222,7 +219,13 @@ describe('ThinkingAudioManager', () => {
       vi.useFakeTimers();
       const onSendAudio = vi.fn();
       const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'filler', fillerToneHz: 440, fillerVolume: 0.1, maxDurationMs: 5000 },
+        {
+          enabled: true,
+          strategy: 'filler',
+          fillerToneHz: 440,
+          fillerVolume: 0.1,
+          maxDurationMs: 5000,
+        },
         onSendAudio,
       );
 
@@ -249,10 +252,7 @@ describe('ThinkingAudioManager', () => {
   describe('destroy', () => {
     it('should stop all active turns', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       await manager.startThinking('turn-1');
       await manager.startThinking('turn-2');
@@ -264,10 +264,7 @@ describe('ThinkingAudioManager', () => {
 
     it('should prevent new thinking after destroy', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       manager.destroy();
 
@@ -280,10 +277,7 @@ describe('ThinkingAudioManager', () => {
   describe('startThinking idempotency', () => {
     it('should not start duplicate thinking for the same turn', async () => {
       const onSendAudio = vi.fn();
-      const manager = new ThinkingAudioManager(
-        { enabled: true, strategy: 'silence' },
-        onSendAudio,
-      );
+      const manager = new ThinkingAudioManager({ enabled: true, strategy: 'silence' }, onSendAudio);
 
       await manager.startThinking('turn-1');
       await manager.startThinking('turn-1');

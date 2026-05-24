@@ -40,7 +40,7 @@ describe('DeepgramTTSProvider', () => {
 
   describe('synthesize', () => {
     function setupMockStream(data: Uint8Array) {
-      const encoder = new TextEncoder();
+      const _encoder = new TextEncoder();
       const stream = new ReadableStream({
         start(controller) {
           controller.enqueue(data);
@@ -78,7 +78,7 @@ describe('DeepgramTTSProvider', () => {
       expect(callUrl).toContain('api.deepgram.com');
       expect(callUrl).toContain('/v1/speak');
       const callHeaders = fetchSpy.mock.calls[0][1]?.headers as Record<string, string>;
-      expect(callHeaders['Authorization']).toBe('Token test-api-key');
+      expect(callHeaders.Authorization).toBe('Token test-api-key');
     });
 
     it('should fall back to env var for API key', async () => {
@@ -166,23 +166,24 @@ describe('DeepgramTTSProvider', () => {
 
   describe('cancel', () => {
     it('should abort in-progress synthesis', async () => {
-      const fetchSpy = vi.fn().mockImplementation((_url, options) =>
-        new Promise<Response>((_resolve, reject) => {
-          const signal = (options as RequestInit)?.signal as AbortSignal | undefined;
-          if (signal) {
-            if (signal.aborted) {
-              const err = new Error('The operation was aborted');
-              err.name = 'AbortError';
-              reject(err);
-              return;
+      const fetchSpy = vi.fn().mockImplementation(
+        (_url, options) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = (options as RequestInit)?.signal as AbortSignal | undefined;
+            if (signal) {
+              if (signal.aborted) {
+                const err = new Error('The operation was aborted');
+                err.name = 'AbortError';
+                reject(err);
+                return;
+              }
+              signal.addEventListener('abort', () => {
+                const err = new Error('The operation was aborted');
+                err.name = 'AbortError';
+                reject(err);
+              });
             }
-            signal.addEventListener('abort', () => {
-              const err = new Error('The operation was aborted');
-              err.name = 'AbortError';
-              reject(err);
-            });
-          }
-        }),
+          }),
       );
       vi.stubGlobal('fetch', fetchSpy);
 

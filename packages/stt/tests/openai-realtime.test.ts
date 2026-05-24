@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let lastWsInstance: any = null;
 
@@ -16,7 +16,7 @@ vi.mock('ws', () => {
     onclose: (() => void) | null = null;
     onerror: ((err: any) => void) | null = null;
 
-    constructor(url: string, opts?: any) {
+    constructor(_url: string, _opts?: any) {
       lastWsInstance = this;
       setTimeout(() => {
         if (this.onopen) this.onopen();
@@ -31,7 +31,7 @@ vi.mock('ws', () => {
     }
 
     send(_data: any) {}
-    close(code?: number) {
+    close(_code?: number) {
       this.readyState = 3;
       if (this.onclose) this.onclose();
     }
@@ -76,7 +76,10 @@ describe('OpenAIRealtimeSTTProvider', () => {
     });
 
     it('should merge custom options', () => {
-      const custom = new OpenAIRealtimeSTTProvider({ apiUrl: 'custom.openai.com', reconnectAttempts: 5 });
+      const custom = new OpenAIRealtimeSTTProvider({
+        apiUrl: 'custom.openai.com',
+        reconnectAttempts: 5,
+      });
       expect((custom as any).options.apiUrl).toBe('custom.openai.com');
       expect((custom as any).options.reconnectAttempts).toBe(5);
     });
@@ -131,7 +134,7 @@ describe('OpenAIRealtimeSTTProvider', () => {
         sampleRate: 24000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(JSON.stringify({ type: 'input_audio_buffer.speech_started' })),
         );
@@ -148,14 +151,12 @@ describe('OpenAIRealtimeSTTProvider', () => {
 
       const sendSpy = vi.spyOn(lastWsInstance, 'send');
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(JSON.stringify({ type: 'input_audio_buffer.speech_stopped' })),
         );
         expect((provider as any).speechActive).toBe(false);
-        expect(sendSpy).toHaveBeenCalledWith(
-          expect.stringContaining('input_audio_buffer.commit'),
-        );
+        expect(sendSpy).toHaveBeenCalledWith(expect.stringContaining('input_audio_buffer.commit'));
       }
     });
 
@@ -169,7 +170,7 @@ describe('OpenAIRealtimeSTTProvider', () => {
         sampleRate: 24000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(
             JSON.stringify({
@@ -201,7 +202,7 @@ describe('OpenAIRealtimeSTTProvider', () => {
         sampleRate: 24000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(
             JSON.stringify({
@@ -228,7 +229,7 @@ describe('OpenAIRealtimeSTTProvider', () => {
         sampleRate: 24000,
       });
 
-      if (lastWsInstance && lastWsInstance.onmessage) {
+      if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
           Buffer.from(
             JSON.stringify({
@@ -250,10 +251,8 @@ describe('OpenAIRealtimeSTTProvider', () => {
       });
 
       expect(() => {
-        if (lastWsInstance && lastWsInstance.onmessage) {
-          lastWsInstance.onmessage(
-            Buffer.from(JSON.stringify({ type: 'unknown.type' })),
-          );
+        if (lastWsInstance?.onmessage) {
+          lastWsInstance.onmessage(Buffer.from(JSON.stringify({ type: 'unknown.type' })));
         }
       }).not.toThrow();
     });

@@ -15,7 +15,7 @@ vi.mock('ws', () => {
     onclose: (() => void) | null = null;
     onerror: ((err: any) => void) | null = null;
 
-    constructor(url: string, opts?: any) {
+    constructor(_url: string, _opts?: any) {
       lastWsInstance = this;
       setTimeout(() => {
         if (this.onopen) this.onopen();
@@ -30,7 +30,7 @@ vi.mock('ws', () => {
     }
 
     send(_data: any) {}
-    close(code?: number) {
+    close(_code?: number) {
       this.readyState = 3;
       if (this.onclose) this.onclose();
     }
@@ -170,7 +170,11 @@ describe('GeminiLiveS2SProvider', () => {
       });
 
       expect(transcriptCb).toHaveBeenCalledWith(
-        expect.objectContaining({ transcript: 'Hello from Gemini', confidence: 0.9, isFinal: false }),
+        expect.objectContaining({
+          transcript: 'Hello from Gemini',
+          confidence: 0.9,
+          isFinal: false,
+        }),
       );
     });
 

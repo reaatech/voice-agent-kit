@@ -1,6 +1,6 @@
+import type { AudioChunk } from '@reaatech/voice-agent-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { VonageTransport } from '../src/adapters/vonage.js';
-import type { AudioChunk } from '@reaatech/voice-agent-core';
 
 function createMockWs() {
   const listeners: Record<string, (...args: unknown[]) => void> = {};
@@ -147,11 +147,13 @@ describe('VonageTransport', () => {
       transport.on('call:start', (d: any) => callStarts.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        event: 'websocket:connected',
-        conversation_uuid: 'conv-123',
-        uuid: 'uuid-456',
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          event: 'websocket:connected',
+          conversation_uuid: 'conv-123',
+          uuid: 'uuid-456',
+        }),
+      );
 
       expect(sessionStarts.length).toBe(1);
       expect(sessionStarts[0]).toMatchObject({
@@ -173,10 +175,12 @@ describe('VonageTransport', () => {
       transport.on('session:start', (d: any) => sessionStarts.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        event: 'websocket:connected',
-        uuid: 'uuid-456',
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          event: 'websocket:connected',
+          uuid: 'uuid-456',
+        }),
+      );
 
       expect(sessionStarts[0].sessionId).toBe('uuid-456');
       expect(transport.getSessionId()).toBe('uuid-456');
@@ -188,14 +192,18 @@ describe('VonageTransport', () => {
       transport.on('session:end', (d: any) => sessionEnds.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        event: 'websocket:connected',
-        conversation_uuid: 'conv-123',
-      }));
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        event: 'websocket:disconnected',
-        conversation_uuid: 'conv-123',
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          event: 'websocket:connected',
+          conversation_uuid: 'conv-123',
+        }),
+      );
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          event: 'websocket:disconnected',
+          conversation_uuid: 'conv-123',
+        }),
+      );
 
       expect(sessionEnds.length).toBe(1);
       expect(sessionEnds[0]).toMatchObject({ sessionId: 'conv-123' });
@@ -208,13 +216,13 @@ describe('VonageTransport', () => {
       transport.on('speech:received', (d: any) => speechEvents.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        speech: {
-          results: [
-            { text: 'hello world', confidence: 0.95 },
-          ],
-        },
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          speech: {
+            results: [{ text: 'hello world', confidence: 0.95 }],
+          },
+        }),
+      );
 
       expect(speechEvents.length).toBe(1);
       expect(speechEvents[0]).toMatchObject({
@@ -229,11 +237,13 @@ describe('VonageTransport', () => {
       transport.on('speech:received', (d: any) => speechEvents.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        speech: {
-          results: [],
-        },
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          speech: {
+            results: [],
+          },
+        }),
+      );
 
       expect(speechEvents.length).toBe(0);
     });
@@ -244,12 +254,14 @@ describe('VonageTransport', () => {
       transport.on('dtmf:received', (d: any) => dtmfEvents.push(d));
 
       await transport.acceptConnection(mockWs as any);
-      (mockWs as any)._simulateTextMessage(JSON.stringify({
-        dtmf: {
-          digit: '9',
-          timed_out: false,
-        },
-      }));
+      (mockWs as any)._simulateTextMessage(
+        JSON.stringify({
+          dtmf: {
+            digit: '9',
+            timed_out: false,
+          },
+        }),
+      );
 
       expect(dtmfEvents.length).toBe(1);
       expect(dtmfEvents[0].digit).toBe('9');
@@ -449,7 +461,12 @@ describe('VonageTransport', () => {
 
   describe('Barge-in', () => {
     it('should trigger barge-in after min duration', () => {
-      const custom = new VonageTransport({ bargeInEnabled: true, minSpeechDuration: 0, confidenceThreshold: 0.5, silenceThreshold: 0.3 });
+      const custom = new VonageTransport({
+        bargeInEnabled: true,
+        minSpeechDuration: 0,
+        confidenceThreshold: 0.5,
+        silenceThreshold: 0.3,
+      });
       custom.setTTSPlaying(true);
 
       const bargeInEvents: any[] = [];

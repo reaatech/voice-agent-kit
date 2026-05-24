@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMCPClient } from '../src/factory.js';
 import { MCPClient } from '../src/client.js';
+import { createMCPClient } from '../src/factory.js';
 
 describe('MCPClient Factory', () => {
   beforeEach(() => {

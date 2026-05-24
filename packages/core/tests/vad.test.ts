@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { EnergyVADProvider } from '../src/vad/energy-vad.js';
-import {
-  SemanticEndpointDetector,
-  createSemanticEndpointDetector,
-} from '../src/vad/semantic-endpoint.js';
-import { createVADProvider, createDefaultVADProvider } from '../src/vad/index.js';
+import { describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '../src/types/index.js';
+import { EnergyVADProvider } from '../src/vad/energy-vad.js';
+import { createDefaultVADProvider, createVADProvider } from '../src/vad/index.js';
+import {
+  createSemanticEndpointDetector,
+  SemanticEndpointDetector,
+} from '../src/vad/semantic-endpoint.js';
 
 function silenceChunk(timestamp: number, sampleRate = 8000): AudioChunk {
   const frameSamples = Math.floor((sampleRate / 1000) * 20);
@@ -217,7 +217,11 @@ describe('EnergyVADProvider', () => {
     });
 
     it('should detect silence endpoint using passed history timestamps', () => {
-      const vad = new EnergyVADProvider({ silenceTimeout: 200, minSpeechDuration: 50, maxSpeechDuration: 50000 });
+      const vad = new EnergyVADProvider({
+        silenceTimeout: 200,
+        minSpeechDuration: 50,
+        maxSpeechDuration: 50000,
+      });
       initNoiseFloor(vad);
 
       vad.process(speechChunk(10_500));
@@ -235,7 +239,11 @@ describe('EnergyVADProvider', () => {
     });
 
     it('should not detect endpoint when speech is below minSpeechDuration', () => {
-      const vad = new EnergyVADProvider({ silenceTimeout: 100, minSpeechDuration: 500, maxSpeechDuration: 50000 });
+      const vad = new EnergyVADProvider({
+        silenceTimeout: 100,
+        minSpeechDuration: 500,
+        maxSpeechDuration: 50000,
+      });
       initNoiseFloor(vad);
 
       vad.process(speechChunk(10_500));
@@ -251,7 +259,11 @@ describe('EnergyVADProvider', () => {
     });
 
     it('should increase endpoint confidence when totalSpeechDurationMs exceeds 500', () => {
-      const vad = new EnergyVADProvider({ silenceTimeout: 100, minSpeechDuration: 50, maxSpeechDuration: 50000 });
+      const vad = new EnergyVADProvider({
+        silenceTimeout: 100,
+        minSpeechDuration: 50,
+        maxSpeechDuration: 50000,
+      });
       initNoiseFloor(vad);
 
       vad.process(speechChunk(10_500));
@@ -308,7 +320,9 @@ describe('EnergyVADProvider', () => {
 
       vad.reset();
 
-      expect((vad as unknown as { noiseFloorInitialized: boolean }).noiseFloorInitialized).toBe(false);
+      expect((vad as unknown as { noiseFloorInitialized: boolean }).noiseFloorInitialized).toBe(
+        false,
+      );
       expect((vad as unknown as { isSpeaking: boolean }).isSpeaking).toBe(false);
       expect((vad as unknown as { speechHistory: unknown[] }).speechHistory.length).toBe(0);
 
@@ -328,10 +342,7 @@ describe('SemanticEndpointDetector', () => {
     });
 
     it('should create with convenience factory', () => {
-      const d = createSemanticEndpointDetector(
-        { silenceTimeout: 200 },
-        { minUtteranceLength: 3 },
-      );
+      const d = createSemanticEndpointDetector({ silenceTimeout: 200 }, { minUtteranceLength: 3 });
       expect(d).toBeInstanceOf(SemanticEndpointDetector);
     });
 

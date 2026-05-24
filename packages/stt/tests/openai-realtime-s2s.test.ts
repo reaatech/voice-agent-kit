@@ -15,7 +15,7 @@ vi.mock('ws', () => {
     onclose: (() => void) | null = null;
     onerror: ((err: any) => void) | null = null;
 
-    constructor(url: string, opts?: any) {
+    constructor(_url: string, _opts?: any) {
       lastWsInstance = this;
       setTimeout(() => {
         if (this.onopen) this.onopen();
@@ -30,7 +30,7 @@ vi.mock('ws', () => {
     }
 
     send(_data: any) {}
-    close(code?: number) {
+    close(_code?: number) {
       this.readyState = 3;
       if (this.onclose) this.onclose();
     }
@@ -81,7 +81,10 @@ describe('OpenAIRealtimeS2SProvider', () => {
     });
 
     it('should merge custom options', () => {
-      const custom = new OpenAIRealtimeS2SProvider({ apiUrl: 'custom.openai.com', reconnectAttempts: 5 });
+      const custom = new OpenAIRealtimeS2SProvider({
+        apiUrl: 'custom.openai.com',
+        reconnectAttempts: 5,
+      });
       expect((custom as any).options.apiUrl).toBe('custom.openai.com');
     });
   });

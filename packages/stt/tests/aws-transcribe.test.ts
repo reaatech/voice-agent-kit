@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@aws-sdk/client-transcribe-streaming', () => ({
   TranscribeStreamingClient: vi.fn().mockImplementation(() => ({
@@ -9,9 +9,7 @@ vi.mock('@aws-sdk/client-transcribe-streaming', () => ({
           TranscriptResult: {
             Transcripts: [
               {
-                Alternatives: [
-                  { Transcript: 'hello world', Confidence: 0.95 },
-                ],
+                Alternatives: [{ Transcript: 'hello world', Confidence: 0.95 }],
                 IsPartial: false,
               },
             ],
@@ -223,7 +221,12 @@ describe('AWSTranscribeProvider', () => {
     it('should register utterance callback', () => {
       const cb = vi.fn();
       provider.onUtterance(cb);
-      provider.emit('utterance', { transcript: 'test', confidence: 0.9, isFinal: true, timestamp: Date.now() });
+      provider.emit('utterance', {
+        transcript: 'test',
+        confidence: 0.9,
+        isFinal: true,
+        timestamp: Date.now(),
+      });
       expect(cb).toHaveBeenCalled();
     });
 

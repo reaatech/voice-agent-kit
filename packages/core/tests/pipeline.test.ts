@@ -1,13 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PipelineDependencies } from '../src/pipeline/index.js';
-import {
-  createPipeline,
-  createPipelineForMode,
-  Pipeline,
-  createSpeechToSpeechPipeline,
-} from '../src/pipeline/index.js';
-import type { AudioChunk, Utterance } from '../src/types/index.js';
+import { createPipeline, createPipelineForMode, Pipeline } from '../src/pipeline/index.js';
 import { ThinkingAudioManager } from '../src/pipeline/thinking-audio.js';
+import type { AudioChunk, Utterance } from '../src/types/index.js';
 
 // Mock providers
 function createMockSTTProviderWithEndOfSpeech() {
@@ -641,7 +636,8 @@ describe('Pipeline - Full Event Emission', () => {
 
   it('should emit all STT events in order', async () => {
     const deps = createDependencies();
-    deps.sttProvider = createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
+    deps.sttProvider =
+      createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
     const p = new Pipeline(deps);
 
     const events: string[] = [];
@@ -684,7 +680,8 @@ describe('Pipeline - Full Event Emission', () => {
 
   it('should emit stt:interim before stt:final', async () => {
     const deps = createDependencies();
-    deps.sttProvider = createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
+    deps.sttProvider =
+      createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
     const p = new Pipeline(deps);
 
     const eventOrder: string[] = [];
@@ -736,7 +733,8 @@ describe('Pipeline - Barge In', () => {
 
   beforeEach(() => {
     dependencies = createDependencies();
-    dependencies.ttsProvider = createSlowTTSProvider() as unknown as PipelineDependencies['ttsProvider'];
+    dependencies.ttsProvider =
+      createSlowTTSProvider() as unknown as PipelineDependencies['ttsProvider'];
     pipeline = new Pipeline(dependencies);
   });
 
@@ -869,9 +867,7 @@ describe('Pipeline - DTMF Processing', () => {
 
     pipeline.processDTMFInput('session-1', '3');
 
-    const calls = receivedHandler.mock.calls.map(
-      (c: any) => c[0].data.sequence,
-    );
+    const calls = receivedHandler.mock.calls.map((c: any) => c[0].data.sequence);
     // After timeout, the sequence should reset: 3 is alone, not 123
     const lastCall = calls[calls.length - 1];
     expect(lastCall).toBe('3');
@@ -917,7 +913,8 @@ describe('Pipeline - VAD Integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     dependencies = createDependencies();
-    dependencies.vadProvider = createMockVADProvider() as unknown as PipelineDependencies['vadProvider'];
+    dependencies.vadProvider =
+      createMockVADProvider() as unknown as PipelineDependencies['vadProvider'];
     pipeline = new Pipeline(dependencies);
   });
 
@@ -986,7 +983,13 @@ describe('Pipeline - Thinking Audio', () => {
   beforeEach(() => {
     dependencies = createDependencies();
     dependencies.thinkingAudioManager = new ThinkingAudioManager(
-      { enabled: true, strategy: 'filler', fillerToneHz: 440, fillerVolume: 0.1, maxDurationMs: 800 },
+      {
+        enabled: true,
+        strategy: 'filler',
+        fillerToneHz: 440,
+        fillerVolume: 0.1,
+        maxDurationMs: 800,
+      },
       vi.fn(),
     );
     dependencies.config = {
@@ -1085,7 +1088,9 @@ describe('Pipeline - TTS Error Handling', () => {
 
   beforeEach(() => {
     dependencies = createDependencies();
-    dependencies.ttsProvider = createFailingTTSProvider('TTS synthesis failed') as unknown as PipelineDependencies['ttsProvider'];
+    dependencies.ttsProvider = createFailingTTSProvider(
+      'TTS synthesis failed',
+    ) as unknown as PipelineDependencies['ttsProvider'];
     pipeline = new Pipeline(dependencies);
   });
 
@@ -1230,7 +1235,8 @@ describe('Pipeline - Edge Cases', () => {
 
   it('should handle multiple utterances in sequence', async () => {
     const deps = createDependencies();
-    deps.sttProvider = createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
+    deps.sttProvider =
+      createMockSTTProviderWithInterim() as unknown as PipelineDependencies['sttProvider'];
     const p = new Pipeline(deps);
 
     const sttFinalHandler = vi.fn();
@@ -1259,7 +1265,8 @@ describe('Pipeline - Cost Integration', () => {
 
   beforeEach(() => {
     const deps = createDependencies();
-    deps.recordingManager = createMockRecordingManager() as unknown as PipelineDependencies['recordingManager'];
+    deps.recordingManager =
+      createMockRecordingManager() as unknown as PipelineDependencies['recordingManager'];
     deps.costTracker = createMockCostTracker() as unknown as PipelineDependencies['costTracker'];
     (deps.config as any).cost = { enabled: true };
     pipeline = new Pipeline(deps);
@@ -1307,7 +1314,8 @@ describe('Pipeline - EndOfSpeech Handling', () => {
 
   beforeEach(() => {
     dependencies = createDependencies();
-    dependencies.sttProvider = createMockSTTProviderWithEndOfSpeech() as unknown as PipelineDependencies['sttProvider'];
+    dependencies.sttProvider =
+      createMockSTTProviderWithEndOfSpeech() as unknown as PipelineDependencies['sttProvider'];
     pipeline = new Pipeline(dependencies);
   });
 
@@ -1321,7 +1329,9 @@ describe('Pipeline - EndOfSpeech Handling', () => {
 
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
-    const stt = dependencies.sttProvider as unknown as ReturnType<typeof createMockSTTProviderWithEndOfSpeech>;
+    const stt = dependencies.sttProvider as unknown as ReturnType<
+      typeof createMockSTTProviderWithEndOfSpeech
+    >;
     stt.triggerEndOfSpeech();
 
     expect(eosHandler).toHaveBeenCalled();
@@ -1333,7 +1343,9 @@ describe('Pipeline - EndOfSpeech Handling', () => {
 
     await pipeline.startSession({ sessionId: 'session-1', status: 'active' });
 
-    const stt = dependencies.sttProvider as unknown as ReturnType<typeof createMockSTTProviderWithEndOfSpeech>;
+    const stt = dependencies.sttProvider as unknown as ReturnType<
+      typeof createMockSTTProviderWithEndOfSpeech
+    >;
 
     const chunk: AudioChunk = {
       buffer: Buffer.from([0x7f]),
@@ -1358,8 +1370,16 @@ describe('Pipeline - Conversation History', () => {
 
   beforeEach(() => {
     dependencies = createDependencies();
-    (dependencies.sessionManager.getConversationHistory as ReturnType<typeof vi.fn>).mockReturnValue([
-      { userUtterance: 'Hello', agentResponse: 'Hi there!', turnId: 'turn-0', timestamp: new Date(), latencyMs: 100 },
+    (
+      dependencies.sessionManager.getConversationHistory as ReturnType<typeof vi.fn>
+    ).mockReturnValue([
+      {
+        userUtterance: 'Hello',
+        agentResponse: 'Hi there!',
+        turnId: 'turn-0',
+        timestamp: new Date(),
+        latencyMs: 100,
+      },
     ]);
     pipeline = new Pipeline(dependencies);
   });
@@ -1400,9 +1420,11 @@ describe('Pipeline - Recording and Cost Full Flow', () => {
 
   beforeEach(() => {
     dependencies = createDependencies();
-    dependencies.recordingManager = createMockRecordingManager() as unknown as PipelineDependencies['recordingManager'];
+    dependencies.recordingManager =
+      createMockRecordingManager() as unknown as PipelineDependencies['recordingManager'];
     (dependencies.recordingManager.isEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
-    dependencies.costTracker = createMockCostTracker() as unknown as PipelineDependencies['costTracker'];
+    dependencies.costTracker =
+      createMockCostTracker() as unknown as PipelineDependencies['costTracker'];
     (dependencies.config as any).cost = { enabled: true };
     pipeline = new Pipeline(dependencies);
   });
@@ -1464,7 +1486,9 @@ describe('Pipeline - endSession Error Handling', () => {
   });
 
   it('should handle STT close error during endSession', async () => {
-    (dependencies.sttProvider.close as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Close error'));
+    (dependencies.sttProvider.close as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Close error'),
+    );
 
     const errorHandler = vi.fn();
     pipeline.on('pipeline:error', errorHandler);

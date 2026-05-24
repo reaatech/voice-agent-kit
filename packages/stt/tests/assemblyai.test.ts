@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let lastWsInstance: any = null;
 
@@ -16,7 +16,7 @@ vi.mock('ws', () => {
     onclose: (() => void) | null = null;
     onerror: ((err: any) => void) | null = null;
 
-    constructor(url: string, opts?: any) {
+    constructor(_url: string, _opts?: any) {
       lastWsInstance = this;
       setTimeout(() => {
         if (this.onopen) this.onopen();
@@ -31,7 +31,7 @@ vi.mock('ws', () => {
     }
 
     send(_data: any) {}
-    close(code?: number) {
+    close(_code?: number) {
       this.readyState = 3;
       if (this.onclose) this.onclose();
     }
@@ -75,7 +75,10 @@ describe('AssemblyAIProvider', () => {
     });
 
     it('should merge custom options', () => {
-      const custom = new AssemblyAIProvider({ apiUrl: 'custom.assemblyai.com', reconnectAttempts: 5 });
+      const custom = new AssemblyAIProvider({
+        apiUrl: 'custom.assemblyai.com',
+        reconnectAttempts: 5,
+      });
       expect((custom as any).options.apiUrl).toBe('custom.assemblyai.com');
       expect((custom as any).options.reconnectAttempts).toBe(5);
     });
@@ -92,9 +95,9 @@ describe('AssemblyAIProvider', () => {
     });
 
     it('should throw without API key', async () => {
-      await expect(
-        provider.connect({ provider: 'assemblyai', sampleRate: 16000 }),
-      ).rejects.toThrow('AssemblyAI API key is required');
+      await expect(provider.connect({ provider: 'assemblyai', sampleRate: 16000 })).rejects.toThrow(
+        'AssemblyAI API key is required',
+      );
     });
   });
 
@@ -233,9 +236,7 @@ describe('AssemblyAIProvider', () => {
 
       if (lastWsInstance?.onmessage) {
         lastWsInstance.onmessage(
-          Buffer.from(
-            JSON.stringify({ message_type: 'Error', text: 'API error' }),
-          ),
+          Buffer.from(JSON.stringify({ message_type: 'Error', text: 'API error' })),
         );
 
         expect(errorCb).toHaveBeenCalledWith(new Error('API error'));

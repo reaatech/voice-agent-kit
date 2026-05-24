@@ -202,9 +202,7 @@ describe('WebRTCTransport', () => {
         Buffer.from(JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 })),
       );
 
-      mockWs._simulateMessage(
-        Buffer.from(JSON.stringify({ type: 'audio', data: 'dGVzdA==' })),
-      );
+      mockWs._simulateMessage(Buffer.from(JSON.stringify({ type: 'audio', data: 'dGVzdA==' })));
 
       expect(errors.length).toBe(1);
       expect((errors[0] as Error).message).toContain('Opus decode failed');
@@ -221,9 +219,7 @@ describe('WebRTCTransport', () => {
         Buffer.from(JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 })),
       );
 
-      mockWs._simulateMessage(
-        Buffer.from(JSON.stringify({ type: 'audio', data: '' })),
-      );
+      mockWs._simulateMessage(Buffer.from(JSON.stringify({ type: 'audio', data: '' })));
 
       expect(audioEvents.length).toBe(0);
     });
@@ -279,9 +275,7 @@ describe('WebRTCTransport', () => {
       const mockWs = createMockWs();
 
       await transport.acceptConnection(mockWs as any);
-      mockWs._simulateMessage(
-        Buffer.from(JSON.stringify({ type: 'unknown' })),
-      );
+      mockWs._simulateMessage(Buffer.from(JSON.stringify({ type: 'unknown' })));
     });
 
     it('should handle ArrayBuffer data', async () => {
@@ -293,7 +287,9 @@ describe('WebRTCTransport', () => {
       await transport.acceptConnection(mockWs as any);
 
       const encoder = new TextEncoder();
-      const arrBuf = encoder.encode(JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 })).buffer;
+      const arrBuf = encoder.encode(
+        JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 }),
+      ).buffer;
       mockWs._simulateMessage(Buffer.from(arrBuf));
 
       expect(sessionStarts.length).toBe(1);
@@ -305,7 +301,9 @@ describe('WebRTCTransport', () => {
         on: vi.fn((event: string, cb: (...args: unknown[]) => void) => {
           if (event === 'open') cb();
           if (event === 'message') {
-            const msg = Buffer.from(JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 }));
+            const msg = Buffer.from(
+              JSON.stringify({ type: 'start', sampleRate: 48000, channels: 2 }),
+            );
             cb([msg]);
           }
         }),
@@ -623,10 +621,12 @@ describe('WebRTCTransport', () => {
       }
 
       mockWs._simulateMessage(
-        Buffer.from(JSON.stringify({
-          type: 'audio',
-          data: loudBuffer.toString('base64'),
-        })),
+        Buffer.from(
+          JSON.stringify({
+            type: 'audio',
+            data: loudBuffer.toString('base64'),
+          }),
+        ),
       );
 
       expect(errors.length).toBe(1);

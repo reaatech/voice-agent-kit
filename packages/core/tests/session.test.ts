@@ -110,7 +110,7 @@ describe('SessionManager', () => {
     });
 
     it('should return undefined for expired session by call SID', () => {
-      const session = sessionManager.createSession({
+      const _session = sessionManager.createSession({
         callSid: 'CA123',
         mcpEndpoint: 'https://mcp.example.com',
         sttProvider: 'deepgram',
