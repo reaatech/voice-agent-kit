@@ -28,7 +28,7 @@ pnpm add @discordjs/opus   # preferred — prebuilt native addon
 pnpm add prism-media
 ```
 
-Both are declared as **optional peer dependencies**. `isOpusAvailable()` returns
+Both are **optional** and loaded lazily at runtime. `isOpusAvailable()` returns
 `false` when neither is installed, and `encodeOpus` / `decodeOpus` throw a clear
 error pointing you here.
 
