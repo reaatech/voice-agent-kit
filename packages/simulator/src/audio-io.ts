@@ -33,7 +33,7 @@ function parseWavHeader(buffer: Buffer): WavHeader {
   let dataSize = 0;
   let dataOffset = 0;
 
-  for (let offset = 36; offset < buffer.length - 8; offset++) {
+  for (let offset = 36; offset <= buffer.length - 8; offset++) {
     const chunkId = buffer.toString('utf8', offset, offset + 4);
     const chunkSize = buffer.readUInt32LE(offset + 4);
 

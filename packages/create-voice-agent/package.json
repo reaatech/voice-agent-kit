@@ -28,7 +28,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx watch src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.2.0",
