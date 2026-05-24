@@ -108,6 +108,34 @@ describe('SessionManager', () => {
       const result = sessionManager.getSessionByCallSid('CA999');
       expect(result).toBeUndefined();
     });
+
+    it('should return undefined for expired session by call SID', () => {
+      const _session = sessionManager.createSession({
+        callSid: 'CA123',
+        mcpEndpoint: 'https://mcp.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+
+      vi.advanceTimersByTime(3601000);
+
+      const result = sessionManager.getSessionByCallSid('CA123');
+      expect(result).toBeUndefined();
+    });
+
+    it('should not return closed sessions by call SID', () => {
+      const session = sessionManager.createSession({
+        callSid: 'CA123',
+        mcpEndpoint: 'https://mcp.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+
+      sessionManager.closeSession(session.sessionId);
+
+      const result = sessionManager.getSessionByCallSid('CA123');
+      expect(result).toBeUndefined();
+    });
   });
 
   describe('updateSession', () => {
@@ -276,6 +304,26 @@ describe('SessionManager', () => {
       const history = sessionManager.getConversationHistory('non-existent-id');
       expect(history).toEqual([]);
     });
+
+    it('should return empty array for expired session', () => {
+      const session = sessionManager.createSession({
+        callSid: 'CA123',
+        mcpEndpoint: 'https://mcp.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+
+      sessionManager.addTurn(session.sessionId, {
+        userUtterance: 'Q1',
+        agentResponse: 'A1',
+        latencyMs: 100,
+      });
+
+      vi.advanceTimersByTime(3601000);
+
+      const history = sessionManager.getConversationHistory(session.sessionId);
+      expect(history).toEqual([]);
+    });
   });
 
   describe('closeSession', () => {
@@ -329,6 +377,19 @@ describe('SessionManager', () => {
 
       expect(sessionManager.getActiveSessionCount()).toBe(0);
     });
+
+    it('should not count expired sessions', () => {
+      sessionManager.createSession({
+        callSid: 'CA123',
+        mcpEndpoint: 'https://mcp.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+
+      vi.advanceTimersByTime(3601000);
+
+      expect(sessionManager.getActiveSessionCount()).toBe(0);
+    });
   });
 
   describe('getAllSessions', () => {
@@ -364,6 +425,64 @@ describe('SessionManager', () => {
 
       expect(session.status).toBe('closed');
       expect(sessionManager.getAllSessions()).toHaveLength(0);
+    });
+  });
+
+  describe('Concurrent Sessions', () => {
+    it('should manage multiple concurrent sessions independently', () => {
+      const session1 = sessionManager.createSession({
+        callSid: 'CA100',
+        mcpEndpoint: 'https://mcp1.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+      const session2 = sessionManager.createSession({
+        callSid: 'CA200',
+        mcpEndpoint: 'https://mcp2.example.com',
+        sttProvider: 'google',
+        ttsProvider: 'google',
+      });
+
+      sessionManager.addTurn(session1.sessionId, {
+        userUtterance: 'Hello from session 1',
+        agentResponse: 'Hi there!',
+        latencyMs: 100,
+      });
+      sessionManager.addTurn(session2.sessionId, {
+        userUtterance: 'Hello from session 2',
+        agentResponse: 'Hey!',
+        latencyMs: 50,
+      });
+
+      expect(sessionManager.getActiveSessionCount()).toBe(2);
+
+      const hist1 = sessionManager.getConversationHistory(session1.sessionId);
+      expect(hist1).toHaveLength(1);
+      expect(hist1[0]?.userUtterance).toBe('Hello from session 1');
+
+      const hist2 = sessionManager.getConversationHistory(session2.sessionId);
+      expect(hist2).toHaveLength(1);
+      expect(hist2[0]?.userUtterance).toBe('Hello from session 2');
+    });
+
+    it('should not mix providers between sessions', () => {
+      const session1 = sessionManager.createSession({
+        callSid: 'CA100',
+        mcpEndpoint: 'https://mcp1.example.com',
+        sttProvider: 'deepgram',
+        ttsProvider: 'deepgram',
+      });
+      const session2 = sessionManager.createSession({
+        callSid: 'CA200',
+        mcpEndpoint: 'https://mcp2.example.com',
+        sttProvider: 'google',
+        ttsProvider: 'google',
+      });
+
+      expect(session1.sttProvider).toBe('deepgram');
+      expect(session1.ttsProvider).toBe('deepgram');
+      expect(session2.sttProvider).toBe('google');
+      expect(session2.ttsProvider).toBe('google');
     });
   });
 });

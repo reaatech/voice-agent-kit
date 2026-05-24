@@ -151,6 +151,21 @@ describe('Observability', () => {
       });
       expect(observability).toBeDefined();
     });
+
+    it('should record single exceeded stage', async () => {
+      await observability.initialize();
+      observability.recordTurnMetrics({
+        sessionId: 'session-1',
+        turnId: 'turn-1',
+        sttLatencyMs: 300,
+        mcpLatencyMs: 100,
+        ttsFirstByteMs: 100,
+        totalLatencyMs: 500,
+        budgetExceeded: true,
+        exceededStages: ['stt'],
+      });
+      expect(observability).toBeDefined();
+    });
   });
 
   describe('recordBargeIn', () => {
@@ -172,6 +187,111 @@ describe('Observability', () => {
       await observability.initialize();
       observability.decrementActiveSessions();
       expect(observability).toBeDefined();
+    });
+  });
+
+  describe('recordTurnCost', () => {
+    it('should record turn cost metrics', async () => {
+      await observability.initialize();
+      observability.recordTurnCost({
+        sessionId: 'session-1',
+        turnId: 'turn-1',
+        costCents: 50,
+        sttCostCents: 10,
+        ttsCostCents: 20,
+        mcpCostCents: 20,
+      });
+      expect(observability).toBeDefined();
+    });
+
+    it('should handle zero cost values', async () => {
+      await observability.initialize();
+      observability.recordTurnCost({
+        sessionId: 'session-1',
+        turnId: 'turn-1',
+        costCents: 0,
+        sttCostCents: 0,
+        ttsCostCents: 0,
+        mcpCostCents: 0,
+      });
+      expect(observability).toBeDefined();
+    });
+  });
+
+  describe('recordCostPerMinute', () => {
+    it('should record cost per minute', async () => {
+      await observability.initialize();
+      observability.recordCostPerMinute('session-1', 100);
+      expect(observability).toBeDefined();
+    });
+
+    it('should handle zero cost per minute', async () => {
+      await observability.initialize();
+      observability.recordCostPerMinute('session-1', 0);
+      expect(observability).toBeDefined();
+    });
+  });
+
+  describe('isInitialized', () => {
+    it('should return false before initialize', () => {
+      expect(observability.isInitialized()).toBe(false);
+    });
+
+    it('should return true after initialize', async () => {
+      await observability.initialize();
+      expect(observability.isInitialized()).toBe(true);
+    });
+
+    it('should return false after shutdown', async () => {
+      await observability.initialize();
+      await observability.shutdown();
+      expect(observability.isInitialized()).toBe(false);
+    });
+  });
+
+  describe('startSpan with disabled config', () => {
+    it('should return null when disabled even with attributes', () => {
+      const disabledObs = new Observability({ enabled: false });
+      const span = disabledObs.startSpan('test.span', { sessionId: 'sess-1' }, SpanKind.CLIENT);
+      expect(span).toBeNull();
+    });
+  });
+
+  describe('startActiveSpan edge cases', () => {
+    it('should handle errors in the callback', async () => {
+      await observability.initialize();
+      expect(() =>
+        observability.startActiveSpan('test.span', () => {
+          throw new Error('callback error');
+        }),
+      ).toThrow('callback error');
+    });
+
+    it('should work when disabled', () => {
+      const disabledObs = new Observability({ enabled: false });
+      const result = disabledObs.startActiveSpan('test.span', (span) => {
+        return span !== null;
+      });
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('withSpan edge cases', () => {
+    it('should return result without span when disabled', async () => {
+      const disabledObs = new Observability({ enabled: false });
+      const result = await disabledObs.withSpan('test.span', async (span) => {
+        return span === null;
+      });
+      expect(result).toBe(true);
+    });
+
+    it('should handle error and still end span', async () => {
+      await observability.initialize();
+      await expect(
+        observability.withSpan('test.span', async () => {
+          throw new Error('async error');
+        }),
+      ).rejects.toThrow('async error');
     });
   });
 
