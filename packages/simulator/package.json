@@ -1,0 +1,80 @@
+{
+  "name": "@reaatech/voice-agent-simulator",
+  "version": "0.1.0",
+  "description": "Local simulator and CLI dev runner for the voice agent pipeline — no Twilio or phone number required",
+  "license": "MIT",
+  "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "voice-agent-simulator": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./cli": {
+      "import": {
+        "types": "./dist/cli.d.ts",
+        "default": "./dist/cli.js"
+      },
+      "require": {
+        "types": "./dist/cli.d.cts",
+        "default": "./dist/cli.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reaatech/voice-agent-kit.git",
+    "directory": "packages/simulator"
+  },
+  "homepage": "https://github.com/reaatech/voice-agent-kit/tree/main/packages/simulator#readme",
+  "bugs": {
+    "url": "https://github.com/reaatech/voice-agent-kit/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@reaatech/voice-agent-core": "workspace:*",
+    "@reaatech/voice-agent-stt": "workspace:*",
+    "@reaatech/voice-agent-tts": "workspace:*",
+    "@reaatech/voice-agent-mcp-client": "workspace:*",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@opentelemetry/api": "^1.7.0",
+    "@types/uuid": "^11.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.0",
+    "vitest": "^1.3.0"
+  }
+}

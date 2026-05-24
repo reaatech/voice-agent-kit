@@ -1,0 +1,35 @@
+{
+  "name": "@reaatech/voice-agent-quickstart",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone Fastify server wiring the full Twilio -> WebSocket -> Pipeline -> STT/TTS voice agent flow",
+  "license": "MIT",
+  "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/websocket": "^11.2.0",
+    "@reaatech/voice-agent-core": "workspace:*",
+    "@reaatech/voice-agent-mcp-client": "workspace:*",
+    "@reaatech/voice-agent-stt": "workspace:*",
+    "@reaatech/voice-agent-telephony": "workspace:*",
+    "@reaatech/voice-agent-tts": "workspace:*",
+    "fastify": "^5.8.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/ws": "^8.5.10",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.1",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

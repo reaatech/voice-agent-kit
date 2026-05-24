@@ -29,11 +29,46 @@ export interface GoogleCloudTTSConfig extends TTSConfig {
   volumeGainDb?: number;
 }
 
+export interface ElevenLabsConfig extends TTSConfig {
+  provider: 'elevenlabs';
+  apiKey?: string;
+  voiceId?: string;
+  modelId?: string;
+  optimizeStreamingLatency?: number;
+  outputFormat?: string;
+  voiceSettings?: {
+    stability?: number;
+    similarityBoost?: number;
+    style?: number;
+    useSpeakerBoost?: boolean;
+  };
+}
+
+export interface CartesiaConfig extends Omit<TTSConfig, 'speed'> {
+  provider: 'cartesia';
+  apiKey?: string;
+  voiceId?: string;
+  modelId?: string;
+  outputFormat?: {
+    container: 'raw' | 'wav' | 'mp3';
+    encoding: 'pcm_f32le' | 'pcm_s16le' | 'pcm_mulaw';
+    sampleRate: number;
+  };
+  language?: string;
+  speed?: 'slowest' | 'slow' | 'normal' | 'fast' | 'fastest';
+  emotion?: Array<'anger' | 'positivity' | 'surprise' | 'sadness' | 'curiosity'>;
+}
+
 export interface TTSProvider {
   readonly name: string;
   synthesize(
     text: string,
-    config: DeepgramTTSConfig | AWSPollyConfig | GoogleCloudTTSConfig,
+    config:
+      | DeepgramTTSConfig
+      | AWSPollyConfig
+      | GoogleCloudTTSConfig
+      | ElevenLabsConfig
+      | CartesiaConfig,
   ): AsyncIterable<AudioChunk>;
   readonly supportsStreaming: boolean;
   readonly firstByteLatencyMs: number | null;

@@ -44,9 +44,51 @@ export interface GoogleCloudSTTConfig extends STTConfig {
   interimResults?: boolean;
 }
 
+export interface OpenAIRealtimeConfig extends STTConfig {
+  model?: string;
+  language?: string;
+  voice?: string;
+  instructions?: string;
+}
+
+export interface OpenAIWhisperConfig extends STTConfig {
+  model?: string;
+  language?: string;
+  prompt?: string;
+  responseFormat?: 'json' | 'text' | 'srt' | 'verbose_json' | 'vtt';
+  temperature?: number;
+}
+
+export interface AssemblyAIConfig extends STTConfig {
+  wordBoost?: string[];
+  encoding?: 'pcm_s16le' | 'pcm_mulaw';
+  endUtteranceSilenceThreshold?: number;
+  punctuate?: boolean;
+  formatText?: boolean;
+  disfluencies?: boolean;
+  interimResults?: boolean;
+}
+
+export interface GroqWhisperConfig extends STTConfig {
+  model?: string;
+  language?: string;
+  prompt?: string;
+  responseFormat?: 'json' | 'text' | 'verbose_json';
+  temperature?: number;
+}
+
+export type STTConfigUnion =
+  | DeepgramConfig
+  | AWSTranscribeConfig
+  | GoogleCloudSTTConfig
+  | OpenAIRealtimeConfig
+  | OpenAIWhisperConfig
+  | AssemblyAIConfig
+  | GroqWhisperConfig;
+
 export interface STTProvider {
   readonly name: string;
-  connect(config: DeepgramConfig | AWSTranscribeConfig | GoogleCloudSTTConfig): Promise<void>;
+  connect(config: STTConfigUnion): Promise<void>;
   streamAudio(chunk: AudioChunk): void;
   onUtterance(cb: (utterance: Utterance) => void): void;
   onEndOfSpeech(cb: () => void): void;

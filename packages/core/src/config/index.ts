@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import type { VoiceAgentKitConfig } from '../types/index.js';
+import { DEFAULT_PRICING } from '../cost/default-pricing.js';
+import type { TransportType, VoiceAgentKitConfig } from '../types/index.js';
 
 const LatencyBudgetSchema = z.object({
   total: z.object({
@@ -57,6 +58,120 @@ const SessionConfigSchema = z.object({
   }),
 });
 
+const VADConfigSchema = z
+  .object({
+    provider: z.enum(['energy', 'none']).default('none'),
+    energyThreshold: z.number().min(1.0).max(10.0).optional(),
+    silenceTimeoutMs: z.number().min(100).max(10000).optional(),
+    minSpeechDurationMs: z.number().min(0).max(5000).optional(),
+    maxSpeechDurationMs: z.number().min(1000).max(60000).optional(),
+  })
+  .optional();
+
+const DTMFConfigSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    interDigitTimeout: z.number().min(500).max(10000).default(2000),
+    maxDigits: z.number().min(1).max(32).default(10),
+    terminatorDigit: z.string().length(1).optional().default('#'),
+  })
+  .optional();
+
+const ThinkingAudioConfigSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    strategy: z.enum(['none', 'silence', 'filler', 'backchannel']).default('none'),
+    backchannelPhrases: z.array(z.string()).optional().default([]),
+    fillerToneHz: z.number().min(100).max(2000).optional().default(440),
+    fillerVolume: z.number().min(0).max(1).optional().default(0.1),
+    maxDurationMs: z.number().min(100).max(5000).optional().default(800),
+  })
+  .optional();
+
+const TransportConfigSchema = z
+  .object({
+    type: z
+      .string()
+      .refine((v: string): v is TransportType =>
+        ['twilio', 'webrtc', 'telnyx', 'signalwire', 'vonage', 'sip'].includes(v),
+      )
+      .optional(),
+    sampleRate: z.number().min(8000).max(48000).optional(),
+    channels: z.number().min(1).max(2).optional(),
+  })
+  .optional();
+
+const SpeechToSpeechConfigSchema = z
+  .object({
+    provider: z.enum(['openai-realtime', 'gemini-live', 'deepgram-speak']),
+    apiKey: z.string().optional(),
+    model: z.string().optional(),
+    voice: z.string().optional(),
+    instructions: z.string().optional(),
+    temperature: z.number().min(0).max(2).optional(),
+    modalities: z.array(z.enum(['text', 'audio'])).optional(),
+    inputAudioFormat: z
+      .object({
+        sampleRate: z.number().min(8000).max(48000),
+        encoding: z.enum(['linear16', 'opus']),
+        channels: z.number().min(1).max(2),
+      })
+      .optional(),
+    outputAudioFormat: z
+      .object({
+        sampleRate: z.number().min(8000).max(48000),
+        encoding: z.enum(['linear16', 'opus', 'mulaw']),
+        channels: z.number().min(1).max(2),
+      })
+      .optional(),
+    vad: z
+      .object({
+        threshold: z.number().min(0).max(1).optional(),
+        silenceDurationMs: z.number().min(100).max(10000).optional(),
+      })
+      .optional(),
+  })
+  .optional();
+
+const RecordingConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  storage: z.enum(['memory', 'filesystem', 's3', 'custom']).default('memory'),
+  directory: z.string().optional(),
+  s3Bucket: z.string().optional(),
+  s3Prefix: z.string().optional(),
+  saveAudio: z.boolean().default(true),
+  saveTranscript: z.boolean().default(true),
+  saveEvents: z.boolean().default(false),
+  format: z.enum(['wav', 'mp3', 'raw']).default('wav'),
+});
+
+const ProviderPricingSchema = z.object({
+  stt: z
+    .object({
+      pricePerMinute: z.number().min(0).optional(),
+      pricePerHour: z.number().min(0).optional(),
+    })
+    .optional(),
+  tts: z
+    .object({
+      pricePerCharacter: z.number().min(0),
+      pricePer1k: z.number().min(0).optional(),
+    })
+    .optional(),
+  llm: z
+    .object({
+      pricePerInputToken: z.number().min(0),
+      pricePerOutputToken: z.number().min(0),
+    })
+    .optional(),
+});
+
+const CostTrackingConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  currency: z.string().default('USD'),
+  providers: z.record(z.string(), ProviderPricingSchema).default(DEFAULT_PRICING),
+});
+
 export const VoiceAgentKitConfigSchema = z.object({
   mcp: MCPConfigSchema,
   stt: STTConfigSchema,
@@ -64,6 +179,14 @@ export const VoiceAgentKitConfigSchema = z.object({
   latency: LatencyBudgetSchema,
   session: SessionConfigSchema,
   bargeIn: BargeInConfigSchema,
+  mode: z.enum(['staged', 'speech-to-speech']).default('staged'),
+  speechToSpeech: SpeechToSpeechConfigSchema,
+  vad: VADConfigSchema,
+  dtmf: DTMFConfigSchema,
+  thinkingAudio: ThinkingAudioConfigSchema,
+  transport: TransportConfigSchema,
+  recording: RecordingConfigSchema.optional(),
+  cost: CostTrackingConfigSchema.optional(),
 });
 
 export function loadConfig(configPath?: string): VoiceAgentKitConfig {
@@ -172,6 +295,29 @@ export function getDefaultConfig(): VoiceAgentKitConfig {
       minSpeechDuration: 300,
       confidenceThreshold: 0.7,
       silenceThreshold: 0.3,
+    },
+    mode: 'staged',
+    vad: {
+      provider: 'none',
+    },
+    dtmf: {
+      enabled: true,
+      interDigitTimeout: 2000,
+      maxDigits: 10,
+      terminatorDigit: '#',
+    },
+    thinkingAudio: {
+      enabled: false,
+      strategy: 'none',
+      backchannelPhrases: [],
+      fillerToneHz: 440,
+      fillerVolume: 0.1,
+      maxDurationMs: 800,
+    },
+    transport: {
+      type: 'twilio',
+      sampleRate: 8000,
+      channels: 1,
     },
   };
 }

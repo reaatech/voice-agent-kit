@@ -1,17 +1,26 @@
 import { SpanKind } from '@opentelemetry/api';
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-
+import type { CostTracker } from '../cost/cost-tracker.js';
 import type { LatencyBudgetEnforcer } from '../latency/index.js';
 import { getObservability } from '../observability/index.js';
+import type { RecordingManager } from '../recording/recording-manager.js';
 import type { SessionManager } from '../session/index.js';
 import type {
   AgentResponse,
   AudioChunk,
   PipelineEvent,
+  TurnRecord,
   Utterance,
   VoiceAgentKitConfig,
 } from '../types/index.js';
+import type { VADProvider } from '../vad/interface.js';
+import type { S2SPipelineDependencies, S2SProvider } from './s2s-pipeline.js';
+import { createSpeechToSpeechPipeline, SpeechToSpeechPipeline } from './s2s-pipeline.js';
+import type { ThinkingAudioManager } from './thinking-audio.js';
+
+export type { S2SPipelineDependencies, S2SProvider };
+export { createSpeechToSpeechPipeline, SpeechToSpeechPipeline };
 
 // Provider interfaces
 export interface STTProvider {
@@ -51,6 +60,10 @@ export interface PipelineDependencies {
   ttsProvider: TTSProvider;
   mcpClient: MCPClient;
   config: VoiceAgentKitConfig;
+  vadProvider?: VADProvider;
+  thinkingAudioManager?: ThinkingAudioManager;
+  recordingManager?: RecordingManager;
+  costTracker?: CostTracker;
 }
 
 export class Pipeline extends EventEmitter {
@@ -70,10 +83,36 @@ export class Pipeline extends EventEmitter {
   private activeTTSTurnId?: string;
   private ttsCancelled = false;
 
+  // DTMF state
+  private dtmfSequence = '';
+  private dtmfSequenceCallSid = '';
+  private dtmfDigitTimes: number[] = [];
+  private dtmfTimer?: NodeJS.Timeout;
+  private dtmfEnabled: boolean;
+  private dtmfInterDigitTimeout: number;
+  private dtmfMaxDigits: number;
+  private dtmfTerminatorDigit: string;
+
+  // VAD endpoint check interval
+  private vadCheckInterval?: NodeJS.Timeout;
+
   constructor(dependencies: PipelineDependencies) {
     super();
     this.dependencies = dependencies;
+
+    const dtmfConfig = dependencies.config.dtmf ?? {
+      enabled: true,
+      interDigitTimeout: 2000,
+      maxDigits: 10,
+      terminatorDigit: '#',
+    };
+    this.dtmfEnabled = dtmfConfig.enabled;
+    this.dtmfInterDigitTimeout = dtmfConfig.interDigitTimeout;
+    this.dtmfMaxDigits = dtmfConfig.maxDigits;
+    this.dtmfTerminatorDigit = dtmfConfig.terminatorDigit ?? '#';
+
     this.setupProviderListeners();
+    this.setupVADCheck();
   }
 
   private setupProviderListeners(): void {
@@ -89,6 +128,18 @@ export class Pipeline extends EventEmitter {
 
   async startSession(session: { sessionId: string; status: string }): Promise<void> {
     this.currentSessionId = session.sessionId;
+
+    const sessionData = this.dependencies.sessionManager.getSession(session.sessionId);
+    const callSid = sessionData?.callSid ?? session.sessionId;
+
+    this.dependencies.recordingManager?.startRecording(
+      session.sessionId,
+      callSid,
+      sessionData?.metadata,
+    );
+
+    this.dependencies.costTracker?.startSession(session.sessionId);
+
     this.emit('pipeline:start', this.createEvent('pipeline:start', session.sessionId));
 
     try {
@@ -137,6 +188,12 @@ export class Pipeline extends EventEmitter {
       );
       return;
     }
+
+    // Record inbound audio
+    this.dependencies.recordingManager?.recordAudioChunk(sessionId, chunk, 'inbound');
+
+    // Feed audio to VAD if configured
+    this.dependencies.vadProvider?.process(chunk);
 
     // Stream audio to STT provider
     this.dependencies.sttProvider.streamAudio(chunk);
@@ -310,6 +367,16 @@ export class Pipeline extends EventEmitter {
       }),
     );
 
+    // Start thinking audio if configured
+    const thinkingAudio = this.dependencies.thinkingAudioManager;
+    if (thinkingAudio && this.dependencies.config.thinkingAudio?.enabled) {
+      this.emit(
+        'pipeline:thinking:start',
+        this.createEvent('pipeline:thinking:start', sessionId, { turnId }),
+      );
+      void thinkingAudio.startThinking(turnId);
+    }
+
     try {
       const history: Array<{ role: string; content: string }> = [];
       for (const turn of this.dependencies.sessionManager.getConversationHistory(sessionId)) {
@@ -323,6 +390,15 @@ export class Pipeline extends EventEmitter {
         utterance,
         history,
       });
+
+      // Stop thinking audio before TTS
+      if (thinkingAudio) {
+        thinkingAudio.stopThinking(turnId);
+        this.emit(
+          'pipeline:thinking:stop',
+          this.createEvent('pipeline:thinking:stop', sessionId, { turnId }),
+        );
+      }
 
       this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
       span?.setAttribute('response_length', response.text.length);
@@ -339,6 +415,14 @@ export class Pipeline extends EventEmitter {
       span?.end();
       await this.processWithTTS(sessionId, turnId, response);
     } catch (error) {
+      if (thinkingAudio) {
+        thinkingAudio.stopThinking(turnId);
+        this.emit(
+          'pipeline:thinking:stop',
+          this.createEvent('pipeline:thinking:stop', sessionId, { turnId }),
+        );
+      }
+
       this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
       span?.recordException(error as Error);
       span?.end();
@@ -414,11 +498,13 @@ export class Pipeline extends EventEmitter {
         }
 
         audioChunks.push(chunk);
+        this.dependencies.recordingManager?.recordAudioChunk(sessionId, chunk, 'outbound');
         this.emit(
           'pipeline:tts:chunk',
           this.createEvent('pipeline:tts:chunk', sessionId, {
             turnId,
             chunkSize: chunk.buffer.length,
+            chunk,
           }),
         );
       }
@@ -459,6 +545,59 @@ export class Pipeline extends EventEmitter {
         budgetExceeded: metrics.budgetExceeded,
         exceededStages: metrics.exceededStages,
       });
+
+      const turnStartTime = this.activeTurns.get(turnId)?.startTime ?? Date.now();
+      const turnUserUtterance = this.activeTurns.get(turnId)?.utterances[0]?.transcript ?? '';
+
+      if (this.dependencies.recordingManager?.isEnabled()) {
+        const turnRecord: TurnRecord = {
+          turnId,
+          userUtterance: turnUserUtterance,
+          agentResponse: response.text,
+          userAudio: [],
+          agentAudio: audioChunks,
+          startTime: turnStartTime,
+          endTime: performance.now(),
+          latencyMs: metrics.totalTurnLatencyMs,
+          toolCalls: response.toolCalls,
+          cost: undefined,
+        };
+
+        const costTracker = this.dependencies.costTracker;
+        if (costTracker && this.dependencies.config.cost?.enabled) {
+          const provider = this.dependencies.config.stt.provider;
+          costTracker.setTurnProvider(sessionId, turnId, provider);
+          costTracker.trackTTSUsage(sessionId, turnId, response.text.length);
+
+          const sttDurationMs = metrics.sttLatencyMs > 0 ? metrics.sttLatencyMs : 200;
+          costTracker.trackSTTUsage(sessionId, turnId, sttDurationMs);
+
+          costTracker.trackMCPUsage(
+            sessionId,
+            turnId,
+            turnUserUtterance.length,
+            response.text.length,
+          );
+
+          const turnCost = costTracker.getTurnCost(sessionId, turnId);
+          turnRecord.cost = turnCost;
+
+          observability.recordTurnCost({
+            sessionId,
+            turnId,
+            costCents: Math.round(turnCost.totalCost * 100),
+            sttCostCents: Math.round(turnCost.sttCost * 100),
+            ttsCostCents: Math.round(turnCost.ttsCost * 100),
+            mcpCostCents: Math.round(turnCost.mcpCost * 100),
+          });
+
+          const costPerMinute = costTracker.getAverageCostPerMinute();
+          observability.recordCostPerMinute(sessionId, Math.round(costPerMinute * 100));
+        }
+
+        this.dependencies.recordingManager?.recordTurn(sessionId, turnRecord);
+      }
+
       this.emit(
         'pipeline:turn:end',
         this.createEvent('pipeline:turn:end', sessionId, {
@@ -508,6 +647,9 @@ export class Pipeline extends EventEmitter {
       );
     }
 
+    void this.dependencies.recordingManager?.stopRecording(sessionId);
+    this.dependencies.costTracker?.endSession(sessionId);
+
     // Clean up active turns for this session
     for (const [turnId, turn] of this.activeTurns.entries()) {
       if (turn.sessionId === sessionId) {
@@ -547,7 +689,195 @@ export class Pipeline extends EventEmitter {
     };
   }
 
+  processDTMFInput(sessionId: string, digit: string): void {
+    if (!this.dtmfEnabled) {
+      return;
+    }
+
+    const now = Date.now();
+
+    this.emit(
+      'pipeline:dtmf:received',
+      this.createEvent('pipeline:dtmf:received', sessionId, {
+        digit,
+        sequence: this.dtmfSequence + digit,
+      }),
+    );
+
+    // Reset sequence if this is a new call or timeout elapsed
+    const lastDigitTime = this.dtmfDigitTimes[this.dtmfDigitTimes.length - 1];
+    if (
+      this.dtmfSequenceCallSid !== sessionId ||
+      (lastDigitTime && now - lastDigitTime > this.dtmfInterDigitTimeout)
+    ) {
+      this.resetDTMFState();
+    }
+
+    this.dtmfSequenceCallSid = sessionId;
+    this.dtmfSequence += digit;
+    this.dtmfDigitTimes.push(now);
+
+    // Check terminator
+    if (digit === this.dtmfTerminatorDigit) {
+      // Remove terminator from sequence
+      const sequence = this.dtmfSequence.slice(0, -1);
+      this.finalizeDTMFSequence(sessionId, sequence);
+      return;
+    }
+
+    // Check max digits
+    if (this.dtmfSequence.length >= this.dtmfMaxDigits) {
+      this.finalizeDTMFSequence(sessionId, this.dtmfSequence);
+      return;
+    }
+
+    // Reset inter-digit timeout
+    if (this.dtmfTimer) {
+      clearTimeout(this.dtmfTimer);
+    }
+
+    this.dtmfTimer = setTimeout(() => {
+      this.finalizeDTMFSequence(sessionId, this.dtmfSequence);
+    }, this.dtmfInterDigitTimeout);
+    this.dtmfTimer.unref?.();
+  }
+
+  private finalizeDTMFSequence(sessionId: string, sequence: string): void {
+    this.emit(
+      'pipeline:dtmf:complete',
+      this.createEvent('pipeline:dtmf:complete', sessionId, {
+        sequence,
+        digitCount: sequence.length,
+      }),
+    );
+
+    if (sequence.length > 0) {
+      void this.processMCPWithDTMF(sessionId, sequence);
+    }
+
+    this.resetDTMFState();
+  }
+
+  private async processMCPWithDTMF(sessionId: string, sequence: string): Promise<void> {
+    const session = this.dependencies.sessionManager.getSession(sessionId);
+
+    if (!session) {
+      return;
+    }
+
+    const turnId = uuidv4();
+
+    this.dependencies.latencyEnforcer.startTurn(turnId);
+    this.dependencies.latencyEnforcer.startStage(turnId, 'mcp');
+
+    this.emit(
+      'pipeline:mcp:request',
+      this.createEvent('pipeline:mcp:request', sessionId, {
+        turnId,
+        utterance: `[DTMF:${sequence}]`,
+        dtmfSequence: sequence,
+      }),
+    );
+
+    try {
+      const history: Array<{ role: string; content: string }> = [];
+      for (const turn of this.dependencies.sessionManager.getConversationHistory(sessionId)) {
+        history.push({ role: 'user', content: turn.userUtterance });
+        history.push({ role: 'assistant', content: turn.agentResponse });
+      }
+
+      const response = await this.dependencies.mcpClient.sendRequest({
+        sessionId,
+        turnId,
+        utterance: `[DTMF:${sequence}]`,
+        history,
+      });
+
+      this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
+      this.emit(
+        'pipeline:mcp:response',
+        this.createEvent('pipeline:mcp:response', sessionId, {
+          turnId,
+          response: response.text,
+          latencyMs: response.latencyMs,
+        }),
+      );
+
+      await this.processWithTTS(sessionId, turnId, response);
+    } catch (error) {
+      this.dependencies.latencyEnforcer.endStage(turnId, 'mcp');
+      this.emit(
+        'pipeline:error',
+        this.createEvent('pipeline:error', sessionId, {
+          turnId,
+          error: String(error),
+          stage: 'dtmf-mcp',
+        }),
+      );
+    }
+  }
+
+  private resetDTMFState(): void {
+    this.dtmfSequence = '';
+    this.dtmfSequenceCallSid = '';
+    this.dtmfDigitTimes = [];
+
+    if (this.dtmfTimer) {
+      clearTimeout(this.dtmfTimer);
+      this.dtmfTimer = undefined;
+    }
+  }
+
+  private setupVADCheck(): void {
+    const vadProvider = this.dependencies.vadProvider;
+    if (!vadProvider) {
+      return;
+    }
+
+    this.vadCheckInterval = setInterval(() => {
+      if (!this.currentSessionId) {
+        return;
+      }
+
+      const result = vadProvider.checkEndpoint([]);
+
+      if (result.isEndpoint) {
+        this.emit(
+          'pipeline:vad:endpoint',
+          this.createEvent('pipeline:vad:endpoint', this.currentSessionId, {
+            reason: result.reason,
+            confidence: result.confidence,
+            silenceDurationMs: result.silenceDurationMs,
+            totalSpeechDurationMs: result.totalSpeechDurationMs,
+          }),
+        );
+
+        this.emit('pipeline:stt:eos', this.createEvent('pipeline:stt:eos', this.currentSessionId));
+
+        // Find and complete any pending turns
+        for (const [turnId, turn] of this.activeTurns.entries()) {
+          if (turn.isProcessing && turn.utterances.length > 0) {
+            const lastUtterance = turn.utterances[turn.utterances.length - 1];
+
+            if (lastUtterance && !lastUtterance.isFinal) {
+              lastUtterance.isFinal = true;
+              this.dependencies.latencyEnforcer.endStage(turnId, 'stt');
+              void this.processWithMCP(turn.sessionId, turnId, lastUtterance.transcript);
+            }
+          }
+        }
+      }
+    }, 100);
+    this.vadCheckInterval.unref?.();
+  }
+
   destroy(): void {
+    if (this.vadCheckInterval) {
+      clearInterval(this.vadCheckInterval);
+      this.vadCheckInterval = undefined;
+    }
+
+    this.resetDTMFState();
     this.activeTurns.clear();
     this.removeAllListeners();
   }
@@ -556,4 +886,18 @@ export class Pipeline extends EventEmitter {
 // Factory function to create a pipeline
 export function createPipeline(dependencies: PipelineDependencies): Pipeline {
   return new Pipeline(dependencies);
+}
+
+// Factory function that selects pipeline based on config mode
+export function createPipelineForMode(
+  stagedDeps: PipelineDependencies,
+  s2sDeps?: S2SPipelineDependencies,
+): Pipeline | SpeechToSpeechPipeline {
+  if (stagedDeps.config.mode === 'speech-to-speech') {
+    if (!s2sDeps) {
+      throw new Error('S2S pipeline dependencies are required when mode is "speech-to-speech"');
+    }
+    return new SpeechToSpeechPipeline(s2sDeps);
+  }
+  return new Pipeline(stagedDeps);
 }

@@ -1,0 +1,96 @@
+# OpenTelemetry Collector Configuration
+# Forwards metrics from voice-agent-kit to Prometheus and Grafana
+#
+# Usage:
+#   otelcol --config infra/grafana/otelcol-config.yaml
+#   or: docker run -v $(pwd)/infra/grafana/otelcol-config.yaml:/etc/otelcol/config.yaml otel/opentelemetry-collector-contrib
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins:
+            - "*"
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 5s
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+  attributes:
+    actions:
+      - key: deployment.environment
+        value: production
+        action: upsert
+
+  resource:
+    attributes:
+      - key: service.namespace
+        value: voice-agent-kit
+        action: upsert
+      - key: telemetry.sdk.name
+        action: delete
+
+exporters:
+  # Prometheus Remote Write - for Grafana Cloud or self-hosted Prometheus
+  prometheusremotewrite:
+    endpoint: "${env:PROMETHEUS_REMOTE_WRITE_ENDPOINT}"
+    headers:
+      Authorization: "Bearer ${env:PROMETHEUS_API_KEY}"
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # Prometheus scrape endpoint - for local testing
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: voice_agent_kit
+    resource_to_telemetry_conversion:
+      enabled: true
+    metric_expiration: 10m
+
+  # Debug logging
+  logging:
+    loglevel: info
+
+  # OTLP forwarding - for Grafana Agent or Tempo
+  otlphttp:
+    endpoint: "${env:OTLP_EXPORT_ENDPOINT}"
+    headers:
+      Authorization: "Bearer ${env:OTLP_API_KEY}"
+
+# For Grafana Cloud, comment out prometheuseexporter and use:
+#   prometheusremotewrite:
+#     endpoint: "https://prometheus-prod-<id>.grafana.net/api/prom/push"
+#     headers:
+#       Authorization: "Bearer <grafana_cloud_api_key>"
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, attributes, resource]
+      exporters:
+        - prometheusremotewrite
+        - prometheus
+        - logging
+    metrics/otlp:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters:
+        - otlphttp
+        - logging

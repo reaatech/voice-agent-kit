@@ -1,4 +1,4 @@
-import type { AudioChunk } from '@reaatech/voice-agent-core';
+import type { AudioChunk, Transport, TransportSessionMetadata } from '@reaatech/voice-agent-core';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 
@@ -25,11 +25,12 @@ export interface BargeInEvent {
   timestamp: number;
 }
 
-export class TwilioMediaStreamHandler extends EventEmitter {
+export class TwilioMediaStreamHandler extends EventEmitter implements Transport {
+  readonly name = 'twilio' as const;
   private ws: WebSocket | null = null;
   private streamSid: string | null = null;
   private callSid: string | null = null;
-  private isConnected = false;
+  isConnected = false;
   private isTTSPlaying = false;
   private currentMarkId = 0;
 
@@ -148,6 +149,10 @@ export class TwilioMediaStreamHandler extends EventEmitter {
     return this.isTTSPlaying;
   }
 
+  getSessionId(): string | null {
+    return this.callSid;
+  }
+
   getCallSid(): string | null {
     return this.callSid;
   }
@@ -257,6 +262,21 @@ export class TwilioMediaStreamHandler extends EventEmitter {
     this.callSid = message.start.callSid;
     this.streamSid = message.start.streamSid || message.start.callSid;
 
+    const codecName =
+      typeof message.start.codec === 'string'
+        ? message.start.codec
+        : (message.start.codec?.name ?? 'mulaw');
+    const rate =
+      typeof message.start.codec === 'string' ? 8000 : (message.start.codec?.clock_rate ?? 8000);
+
+    const sessionMetadata: TransportSessionMetadata = {
+      sessionId: this.callSid,
+      codec: codecName,
+      sampleRate: rate,
+      customParameters: message.start.customParameters,
+    };
+
+    this.emit('session:start', sessionMetadata);
     this.emit('call:start', {
       callSid: this.callSid,
       streamSid: this.streamSid,
@@ -280,9 +300,11 @@ export class TwilioMediaStreamHandler extends EventEmitter {
   }
 
   private handleStop(message: TwilioStopMessage): void {
+    const endedCallSid = message.stop.callSid;
     this.callSid = null;
     this.streamSid = null;
-    this.emit('call:end', { callSid: message.stop.callSid });
+    this.emit('session:end', { sessionId: endedCallSid });
+    this.emit('call:end', { callSid: endedCallSid });
   }
 
   private handleMark(message: TwilioMarkMessage): void {

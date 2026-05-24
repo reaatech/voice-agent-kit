@@ -2,7 +2,14 @@ import type { Engine, PollyClient } from '@aws-sdk/client-polly';
 import type { AudioChunk } from '@reaatech/voice-agent-core';
 import { EventEmitter } from 'events';
 
-import type { AWSPollyConfig, TTSProvider } from '../interface.js';
+import type {
+  AWSPollyConfig,
+  CartesiaConfig,
+  DeepgramTTSConfig,
+  ElevenLabsConfig,
+  GoogleCloudTTSConfig,
+  TTSProvider,
+} from '../interface.js';
 
 export interface AWSPollyOptions {
   region?: string;
@@ -80,7 +87,15 @@ export class AWSPollyProvider extends EventEmitter implements TTSProvider {
     this.emit('connected');
   }
 
-  async *synthesize(text: string, config?: Partial<AWSPollyConfig>): AsyncIterable<AudioChunk> {
+  async *synthesize(
+    text: string,
+    config?:
+      | DeepgramTTSConfig
+      | AWSPollyConfig
+      | GoogleCloudTTSConfig
+      | ElevenLabsConfig
+      | CartesiaConfig,
+  ): AsyncIterable<AudioChunk> {
     if (!this.connected || !this._config) {
       throw new Error('Not connected. Call connect() first.');
     }

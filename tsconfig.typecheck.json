@@ -11,5 +11,9 @@
       "@reaatech/voice-agent-mcp-client": ["./packages/mcp-client/src/index.ts"]
     }
   },
-  "include": ["packages/**/src/**/*.ts"]
+  "include": [
+    "packages/**/src/**/*.ts",
+    "examples/quickstart/src/**/*.ts",
+    "examples/quickstart/voice-agent-kit.config.ts"
+  ]
 }

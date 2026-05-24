@@ -31,7 +31,7 @@ export interface MCPToolCall {
 
 export interface MCPResponse {
   text: string;
-  toolCalls?: MCPToolCall[];
+  toolCalls: MCPToolCall[];
   latencyMs: number;
   confidence?: number;
   metadata?: Record<string, unknown>;
