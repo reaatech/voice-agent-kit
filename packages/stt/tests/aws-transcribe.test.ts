@@ -6,13 +6,15 @@ vi.mock('@aws-sdk/client-transcribe-streaming', () => ({
     send: vi.fn().mockResolvedValue({
       TranscriptResultStream: (async function* () {
         yield {
-          TranscriptResult: {
-            Transcripts: [
-              {
-                Alternatives: [{ Transcript: 'hello world', Confidence: 0.95 }],
-                IsPartial: false,
-              },
-            ],
+          TranscriptEvent: {
+            Transcript: {
+              Results: [
+                {
+                  Alternatives: [{ Transcript: 'hello world' }],
+                  IsPartial: false,
+                },
+              ],
+            },
           },
         };
       })(),
@@ -106,7 +108,7 @@ describe('AWSTranscribeProvider', () => {
       expect(utteranceCb).toHaveBeenCalledWith(
         expect.objectContaining({
           transcript: 'hello world',
-          confidence: 0.95,
+          confidence: 0.9,
           isFinal: true,
         }),
       );
