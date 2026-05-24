@@ -11,6 +11,9 @@ voice-agent-kit is a **transport layer** for real-time voice AI agents. It handl
 - **Latency enforcement** — Budget tracking and per-stage timeouts
 - **Session management** — Multi-turn context, TTL, cleanup
 - **Telephony integration** — Twilio Media Streams WebSocket handler
+- **Transport abstraction** — Pluggable transport layer (Twilio, WebRTC, Telnyx, SignalWire, Vonage)
+- **Speech-to-speech pipeline** — Alternative single-hop S2S mode (OpenAI Realtime, Gemini Live)
+- **VAD & turn-taking** — Pluggable voice activity detection, DTMF input, thinking affordances
 - **Configuration** — Zod-validated, env-driven config
 
 ## What This Repo Does NOT Own
@@ -18,46 +21,55 @@ voice-agent-kit is a **transport layer** for real-time voice AI agents. It handl
 - **Agent logic** — The MCP server is the "brain"; this is just the transport
 - **Built-in RAG** — Use an MCP server like `hybrid-rag-qdrant` for that
 - **SIP trunking** — Twilio abstracts this; direct SIP is out of scope
-- **WebRTC browser clients** — Different transport, different repo
 - **Voiceprint/speaker ID** — Interesting but scope creep
 
 ## Pipeline Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Twilio Media Stream                          │
-│                    (WebSocket, mulaw 8kHz audio)                     │
-└─────────────────────────────┬───────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    TwilioMediaStreamHandler                          │
-│  - Parse start/media/stop/mark/DTMF messages                        │
-│  - Extract audio payload (base64 mulaw)                              │
-│  - Send outbound audio back                                          │
-│  - Handle barge-in (clear + cancel TTS)                              │
-└─────────────────────────────┬───────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Pipeline Orchestrator                        │
-│  AudioChunk → STT → Utterance → MCP → AgentResponse → TTS → Audio   │
-│                                                                       │
-│  Each stage is an async generator/transform stream with:             │
-│  - Typed events (pipeline:stt:start, pipeline:mcp:response, etc.)    │
-│  - Latency tracking                                                   │
-│  - Error propagation                                                  │
-└─────────────────────────────┬───────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│  STTProvider  │    │   MCPClient   │    │  TTSProvider  │
-│               │    │               │    │               │
-│ • Deepgram    │    │ • Connects to │    │ • Deepgram    │
-│ • AWS Trans.  │    │   any MCP     │    │ • AWS Polly   │
-│ • Google STT  │    │   server      │    │ • Google TTS  │
-└───────────────┘    └───────────────┘    └───────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                     Transport Interface (pluggable)                     │
+│   acceptConnection() · sendAudio() · clearAudio() · getSessionId()     │
+└───────────────────────────────┬───────────────────────────────────────┘
+                                │
+     ┌──────────┬──────────┬────┴─────┬──────────┬──────────┐
+     ▼          ▼          ▼          ▼          ▼          ▼
+┌─────────┐┌─────────┐┌─────────┐┌─────────┐┌─────────┐┌─────────┐
+│ Twilio  ││ Telnyx  ││SignalWire││ Vonage  ││ WebRTC  ││ Custom  │
+│(mulaw)  ││(mulaw)  ││(mulaw)  ││(mulaw)  ││ (l16)   ││         │
+└────┬────┘└────┬────┘└────┬────┘└────┬────┘└────┬────┘└────┬────┘
+     └──────────┴──────────┴──────────┴──────────┴──────────┘
+                                │
+              ┌─────────────────┴─────────────────┐
+              ▼                                   ▼
+┌──────────────────────────────┐  ┌──────────────────────────────┐
+│    Staged Pipeline Path       │  │   Speech-to-Speech Path       │
+│                               │  │                               │
+│  Audio → STT → Utterance →    │  │  Audio → S2S Provider →       │
+│  MCP → Text → TTS → Audio     │  │  Audio (single-hop)           │
+│                               │  │                               │
+│  Per-stage events & metrics   │  │  OpenAI Realtime · Gemini Live │
+│  Configurable LLM via MCP     │  │  Direct audio I/O             │
+└───────────────┬───────────────┘  └───────────────┬───────────────┘
+                │                                  │
+                ▼                                  ▼
+┌───────────────────────────────┐  ┌───────────────────────────────┐
+│      Pipeline Orchestrator    │  │       S2S Provider Bridge      │
+│  Typed events · Latency track │  │  Transcript callbacks          │
+│  Error propagation · Barge-in │  │  Audio chunk routing           │
+└───────────────┬───────────────┘  └───────────────────────────────┘
+                │
+    ┌───────────┼───────────┐
+    ▼           ▼           ▼
+┌─────────┐┌─────────┐┌─────────┐
+│   STT   ││   MCP   ││   TTS   │
+│         ││  Client ││         │
+│•Deepgram││         ││•Deepgram│
+│•OpenAI  ││ Connects││•11Labs  │
+│•Assmbly ││  to any ││•Cartesia│
+│•AWS     ││   MCP   ││•AWS     │
+│•Google  ││  server ││•Google  │
+│•Groq    ││         ││         │
+└─────────┘└─────────┘└─────────┘
 ```
 
 ## Provider Interface Contracts
@@ -94,6 +106,32 @@ interface MCPClient {
   connect(): Promise<void>;
   sendRequest(params: MCPRequestParams): Promise<MCPResponse>;
   discoverTools(): Promise<MCPTool[]>;
+  close(): Promise<void>;
+}
+```
+
+### Transport
+
+```typescript
+interface Transport extends EventEmitter {
+  readonly name: string;
+  acceptConnection(connection: unknown): Promise<void>;
+  sendAudio(chunk: AudioChunk): void;
+  clearAudio(): Promise<void>;
+  getSessionId(): string | null;
+  close(): Promise<void>;
+}
+```
+
+### S2S Provider
+
+```typescript
+interface S2SProvider {
+  readonly name: string;
+  connect(config: SpeechToSpeechConfig): Promise<void>;
+  sendAudio(chunk: AudioChunk): void;
+  onAudioOutput(cb: (chunk: AudioChunk) => void): void;
+  onTranscript(cb: (utterance: Utterance) => void): void;
   close(): Promise<void>;
 }
 ```
@@ -157,7 +195,7 @@ export default {
 ## Observability
 
 - **OpenTelemetry** spans per stage (`voice.stt`, `voice.mcp`, `voice.tts`)
-- **Metrics**: turn duration, per-stage latency, barge-in count, active sessions
+- **Metrics**: turn duration, per-stage latency, barge-in count, active sessions, cost
 - **Structured logging**: JSON logs correlated by session ID and trace ID
 - **Exporters**: OTLP (Jaeger, Phoenix, Langfuse), CloudWatch
 
@@ -172,19 +210,23 @@ export default {
 ```
 voice-agent-kit/
 ├── packages/
-│   ├── core/         # Pipeline, session, latency, config, types
-│   ├── stt/          # STT provider interface + adapters
-│   ├── tts/          # TTS provider interface + adapters
-│   ├── mcp-client/   # MCP client wrapper
-│   └── telephony/    # Twilio Media Streams handler
+│   ├── core/              # Pipeline, session, latency, config, types
+│   ├── stt/               # STT provider interface + adapters
+│   ├── tts/               # TTS provider interface + adapters
+│   ├── mcp-client/        # MCP client wrapper
+│   ├── telephony/         # Transport adapters (Twilio, Telnyx, etc.)
+│   ├── webrtc/            # WebRTC browser client transport
+│   ├── simulator/         # Voice agent testing simulator
+│   └── create-voice-agent/ # Project scaffolding CLI
 ├── infra/
-│   ├── aws/          # ECS Terraform
-│   └── gcp/          # Cloud Run Terraform
-├── docker/
-│   └── Dockerfile
+│   ├── aws/               # ECS Terraform
+│   ├── gcp/               # Cloud Run Terraform
+│   └── grafana/           # Observability dashboards
 ├── examples/
 │   ├── hybrid-rag-qdrant/
-│   └── agent-mesh/
-├── skills/           # Agent development skills
+│   ├── agent-mesh/
+│   └── quickstart/
+├── skills/                # Agent development skills
 └── docs/
     └── LATENCY_BUDGET.md
+```

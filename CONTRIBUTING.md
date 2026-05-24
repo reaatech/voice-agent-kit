@@ -24,6 +24,8 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
 ## Adding a New STT Adapter
 
+voice-agent-kit ships with Deepgram, OpenAI, AssemblyAI, AWS Transcribe, Google STT, and Groq adapters. To add a new STT provider:
+
 1. **Create the adapter** in `packages/stt/src/adapters/your-provider.ts`:
 
    ```typescript
@@ -89,6 +91,8 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
 ## Adding a New TTS Adapter
 
+voice-agent-kit ships with Deepgram, ElevenLabs, Cartesia, AWS Polly, and Google TTS adapters. To add a new TTS provider:
+
 1. **Create the adapter** in `packages/tts/src/adapters/your-provider.ts`:
 
    ```typescript
@@ -112,6 +116,12 @@ This guide covers how to contribute to voice-agent-kit, including adding new STT
 
 2. **Add tests** and **export** following the same pattern as STT.
 
+## Adding a New Transport
+
+1. Create in `packages/telephony/src/adapters/your-transport.ts` implementing `Transport` from `@reaatech/voice-agent-core`
+2. Add tests
+3. Export and add to factory `createTransport()`
+
 ## Provider SDK Dependencies
 
 If an adapter needs a heavy provider SDK (e.g. an `@aws-sdk/*` or `@google-cloud/*` package), keep it out of every consumer's install:
@@ -120,6 +130,8 @@ If an adapter needs a heavy provider SDK (e.g. an `@aws-sdk/*` or `@google-cloud
 - **Load it lazily** with a dynamic `await import('...')` inside the adapter (typically in `connect()` or the client factory), so the SDK is only resolved when that provider is actually used. Import only types statically with `import type`.
 
 This keeps the package installable with no SDK for users who only need another provider (Deepgram needs none).
+
+HTTP-based providers (ElevenLabs, Cartesia, OpenAI, AssemblyAI, Groq) use built-in `fetch()` and need no extra SDK — just type their REST API responses.
 
 ## Adding a New Terraform Target
 
@@ -207,7 +219,7 @@ pnpm test:coverage
 
 - Update `README.md` for user-facing changes
 - Update `ARCHITECTURE.md` for architectural changes
-- Add inline comments for complex logic
+- See `examples/quickstart/` for the reference implementation wiring a complete server
 - Add a changeset (`pnpm changeset`) for any user-facing change
 
 ## Questions?

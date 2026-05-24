@@ -6,7 +6,7 @@
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
-Twilio Media Streams WebSocket handler for voice AI agents. Handles the complete Twilio bidirectional streaming protocol: start/media/stop/mark/dtmf events, barge-in detection, audio buffering, and base64 encoding/decoding.
+Multi-provider telephony WebSocket handler for voice AI agents, supporting Twilio, Telnyx, SignalWire, and Vonage. Handles bidirectional streaming protocols: start/media/stop/mark/dtmf events, barge-in detection, audio buffering, and base64 encoding/decoding.
 
 ## Installation
 
@@ -24,6 +24,7 @@ pnpm add @reaatech/voice-agent-telephony
 - **Call lifecycle** — CallSid and StreamSid tracking, connected/disconnected events, graceful close
 - **Base64 encode/decode** — Static utility methods for Twilio's base64 audio payload format
 - **Typed message interfaces** — Full TypeScript types for all Twilio inbound and outbound messages
+- **Multi-provider transport** — Telnyx, SignalWire, and Vonage adapters implementing the `Transport` interface
 - **Reconnection-safe** — Handles already-open WebSocket connections gracefully
 
 ## Quick Start
@@ -141,6 +142,32 @@ interface TwilioOutboundMessage {
 }
 ```
 
+### Transport Interface (from @reaatech/voice-agent-core)
+
+All telephony handlers implement the `Transport` interface:
+
+```typescript
+interface Transport extends EventEmitter {
+  readonly name: string;
+  acceptConnection(connection: unknown): Promise<void>;
+  sendAudio(chunk: AudioChunk): void;
+  clearAudio(): Promise<void>;
+  getSessionId(): string | null;
+  close(): Promise<void>;
+}
+```
+
+### Provider Factory
+
+```typescript
+import { createTransport } from '@reaatech/voice-agent-telephony';
+
+const transport = createTransport({
+  type: 'twilio', // 'twilio' | 'telnyx' | 'signalwire' | 'vonage'
+  bargeInEnabled: true,
+});
+```
+
 ## Usage Patterns
 
 ### Sending TTS Audio to Twilio
@@ -214,6 +241,7 @@ handler.on('call:end', ({ callSid }) => {
 - [@reaatech/voice-agent-core](https://www.npmjs.com/package/@reaatech/voice-agent-core) — Core types, pipeline, config
 - [@reaatech/voice-agent-stt](https://www.npmjs.com/package/@reaatech/voice-agent-stt) — Speech-to-text providers
 - [@reaatech/voice-agent-tts](https://www.npmjs.com/package/@reaatech/voice-agent-tts) — Text-to-speech providers
+- [@reaatech/voice-agent-webrtc](https://www.npmjs.com/package/@reaatech/voice-agent-webrtc) — Browser transport
 
 ## License
 

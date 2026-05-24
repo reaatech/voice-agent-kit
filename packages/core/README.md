@@ -22,10 +22,18 @@ pnpm add @reaatech/voice-agent-core @opentelemetry/api
 - **Pipeline orchestrator** — Full STT → MCP → TTS pipeline with event-driven lifecycle
 - **Latency budget enforcer** — Per-stage timing with hard caps, overflow detection, and metrics
 - **Session manager** — Multi-turn conversation state with TTL expiry and automatic cleanup
+- **Transport abstraction** — Pluggable `Transport` interface for multi-provider telephony support
+- **Speech-to-speech pipeline** — `SpeechToSpeechPipeline` for OpenAI Realtime / Gemini Live single-hop mode
+- **Provider failover** — `CompositeSTTProvider`, `CompositeTTSProvider`, `FailoverManager` with circuit-breaking
+- **VAD & endpointing** — Pluggable voice activity detection with energy-based and semantic detectors
+- **DTMF input** — Keypad digit accumulation with inter-digit timeout and MCP integration
+- **Thinking affordances** — Filler audio during MCP processing to avoid dead air
+- **Call recording** — `RecordingManager` with memory/filesystem/S3 storage backends
+- **Cost tracking** — `CostTracker` with real pricing for 12 providers and OTel metrics
 - **Zod-validated config** — `defineConfig()` with full TypeScript intellisense and runtime validation
 - **Observability** — OpenTelemetry tracing spans, histograms, and counters for every stage
 - **Mock providers** — Built-in `MockSTTProvider`, `MockTTSProvider`, and `MockMCPClient` for testing
-- **25+ exported types** — `AudioChunk`, `Utterance`, `AgentResponse`, `Session`, `Turn`, and more
+- **50+ exported types** — `AudioChunk`, `Utterance`, `AgentResponse`, `Session`, `Turn`, and more
 
 ## Quick Start
 
@@ -77,6 +85,12 @@ pipeline.on('pipeline:turn:end', (event) => {
 | `PipelineEvent` | Typed event from the pipeline with sessionId, turnId, data |
 | `LatencyBudget` | Per-stage timing targets and hard caps |
 | `VoiceAgentKitConfig` | Complete kit configuration (MCP, STT, TTS, latency, session, barge-in) |
+| `Transport` | Pluggable transport layer interface |
+| `S2SProvider` | Speech-to-speech provider interface |
+| `VADProvider` | Voice activity detection provider interface |
+| `RecordingConfig` | Call recording configuration |
+| `CostTrackingConfig` | Per-call cost tracking configuration |
+| `PipelineMode` | Pipeline mode: 'staged' or 'speech-to-speech' |
 
 ### Pipeline
 
@@ -109,6 +123,21 @@ Pipeline events:
 | `pipeline:turn:end` | Turn complete with latency metrics |
 | `pipeline:error` | Error at any stage |
 | `pipeline:end` | Session ended |
+
+### SpeechToSpeechPipeline
+
+For speech-to-speech mode with providers like OpenAI Realtime or Gemini Live:
+
+```typescript
+class SpeechToSpeechPipeline extends EventEmitter {
+  startSession(session): Promise<void>;
+  processAudioChunk(sessionId, chunk): Promise<void>;
+  bargeIn(sessionId): void;
+  endSession(sessionId): Promise<void>;
+}
+```
+
+Created via `createPipelineForMode(config)` which automatically selects `SpeechToSpeechPipeline` when `config.mode === 'speech-to-speech'`.
 
 ### SessionManager
 
@@ -226,6 +255,68 @@ OpenTelemetry metrics exported:
 | `voice.barge_in.count` | Counter | Barge-in event count |
 | `voice.session.active` | UpDownCounter | Active session count |
 | `voice.latency_budget.exceeded` | Counter | Budget exceeded per stage |
+| `voice.cost.per_turn` | Histogram | Per-turn cost in cents |
+| `voice.cost.total` | Counter | Cumulative cost |
+| `voice.cost.per_minute` | Gauge | Cost rate per minute |
+
+### Transport
+
+```typescript
+import type { Transport, TransportConfig, TransportSessionMetadata } from '@reaatech/voice-agent-core';
+```
+
+The `Transport` interface abstracts telephony/browser transport providers. Implementations exist for Twilio, Telnyx, SignalWire, Vonage, and WebRTC.
+
+### VAD & Endpointing
+
+```typescript
+import { createVADProvider, EnergyVADProvider, SemanticEndpointDetector } from '@reaatech/voice-agent-core';
+
+const vad = createVADProvider({ provider: 'energy', silenceTimeoutMs: 500 });
+```
+
+| Provider | Description |
+|----------|-------------|
+| `EnergyVADProvider` | RMS-based energy detection with adaptive noise floor |
+| `SemanticEndpointDetector` | Wraps any VAD with utterance-aware endpoint detection |
+
+### Recording
+
+```typescript
+import { createRecordingManager } from '@reaatech/voice-agent-core';
+
+const recording = createRecordingManager({
+  enabled: true,
+  storage: 'filesystem',
+  directory: './recordings',
+  saveAudio: true,
+  saveTranscript: true,
+});
+```
+
+| Storage | Description |
+|---------|-------------|
+| `memory` | In-memory storage with LRU eviction |
+| `filesystem` | Saves WAV + markdown transcript + JSON metadata to disk |
+| `s3` | Uploads to S3 (requires @aws-sdk/client-s3) |
+
+### Cost Tracking
+
+```typescript
+import { createCostTracker } from '@reaatech/voice-agent-core';
+
+const cost = createCostTracker({
+  enabled: true,
+  currency: 'USD',
+  providers: {
+    deepgram: { stt: { pricePerMinute: 0.0059 }, tts: { pricePerCharacter: 0.000015 } },
+  },
+});
+
+cost.trackSTTUsage(sessionId, turnId, audioDurationMs);
+cost.trackTTSUsage(sessionId, turnId, characterCount);
+const sessionCost = cost.getSessionCost(sessionId);
+```
 
 ### Mock Providers
 
@@ -248,6 +339,8 @@ Pre-built mock implementations for testing pipelines without live provider conne
 - [@reaatech/voice-agent-tts](https://www.npmjs.com/package/@reaatech/voice-agent-tts) — Text-to-speech providers
 - [@reaatech/voice-agent-mcp-client](https://www.npmjs.com/package/@reaatech/voice-agent-mcp-client) — MCP client wrapper
 - [@reaatech/voice-agent-telephony](https://www.npmjs.com/package/@reaatech/voice-agent-telephony) — Twilio Media Streams handler
+- [@reaatech/voice-agent-webrtc](https://www.npmjs.com/package/@reaatech/voice-agent-webrtc) — WebRTC browser transport
+- [@reaatech/voice-agent-simulator](https://www.npmjs.com/package/@reaatech/voice-agent-simulator) — Local development simulator
 
 ## License
 

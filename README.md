@@ -11,8 +11,15 @@ This monorepo provides the pipeline orchestration, telephony integration, provid
 ## Features
 
 - **<800ms pipeline** — End-to-end latency from end-of-speech to first audio byte with per-stage budgets
-- **Provider-agnostic STT** — Deepgram, AWS Transcribe, and Google Cloud Speech-to-Text adapters with a unified interface
-- **Provider-agnostic TTS** — Deepgram Aura, AWS Polly, and Google Cloud Text-to-Speech adapters with cancelable streaming
+- **Transport interface abstraction** — Unified transport layer supports Twilio, WebRTC, and arbitrary WebSocket transports
+- **WebRTC browser transport** — Direct browser-to-agent audio with Opus codec support, no phone number required
+- **Provider-agnostic STT** — 11 adapters: Deepgram, OpenAI Realtime/Whisper, AssemblyAI, Groq Whisper, AWS Transcribe, Google Cloud Speech-to-Text, plus mock providers for development/testing
+- **Provider-agnostic TTS** — 6 adapters: Deepgram Aura, ElevenLabs, Cartesia, AWS Polly, Google Cloud Text-to-Speech, plus mock providers
+- **Speech-to-speech pipeline mode** — Bypass the staged pipeline for direct audio-to-audio via OpenAI Realtime or Gemini Live
+- **Multi-provider failover** — Circuit breaking, health tracking, and automatic failover across STT/TTS providers
+- **Pluggable VAD** — Configurable voice activity detection with DTMF input support and thinking affordances
+- **Call recording & cost tracking** — Record calls to disk/S3 with per-session cost attribution and Grafana dashboards
+- **Local simulator** — Develop and test voice agents without a phone number or cloud credentials
 - **MCP client** — JSON-RPC 2.0 client with tool discovery, retry with backoff, and TTS-optimized response sanitization
 - **Twilio Media Streams** — Bidirectional WebSocket handler with barge-in detection, mark tracking, and base64 audio encoding
 - **Session management** — Multi-turn conversation state with TTL expiry, turn history, and automatic cleanup
@@ -41,6 +48,15 @@ npm install @reaatech/voice-agent-mcp-client
 
 # Twilio Media Streams handler
 npm install @reaatech/voice-agent-telephony
+
+# WebRTC browser transport
+npm install @reaatech/voice-agent-webrtc
+
+# Local development simulator
+npm install @reaatech/voice-agent-simulator
+
+# Project scaffolding CLI
+npm install @reaatech/create-voice-agent
 ```
 
 > `@reaatech/voice-agent-core` requires `@opentelemetry/api` as a peer dependency for
@@ -54,7 +70,7 @@ npm install @reaatech/voice-agent-telephony
 
 The cloud STT/TTS adapters load their provider SDKs lazily and declare them as
 **optional peer dependencies**, so you only install the SDK for the provider you
-actually use. Deepgram needs no extra SDK.
+actually use. Deepgram, ElevenLabs, Cartesia, and OpenAI use HTTP and need no extra SDKs.
 
 ```bash
 # AWS Polly (TTS) / AWS Transcribe (STT)
@@ -86,41 +102,33 @@ pnpm lint
 
 ## Quick Start
 
+> **Fastest path**: `npx @reaatech/create-voice-agent` scaffolds a complete project. See [`examples/quickstart/`](./examples/quickstart/) for a ready-to-run server with Twilio webhook handling, health checks, and more.
+
 Wire up a voice agent pipeline with Deepgram for STT/TTS and a custom MCP endpoint:
 
 ```typescript
-import { defineConfig, createPipeline, initializeSessionManager, createLatencyBudget, LatencyBudgetEnforcer } from '@reaatech/voice-agent-core';
+import { defineConfig, createPipeline } from '@reaatech/voice-agent-core';
 import { DeepgramSTTProvider } from '@reaatech/voice-agent-stt';
 import { DeepgramTTSProvider } from '@reaatech/voice-agent-tts';
 import { MCPClient } from '@reaatech/voice-agent-mcp-client';
-import { createTwilioHandler } from '@reaatech/voice-agent-telephony';
 
 const config = defineConfig({
-  stt: { provider: 'deepgram', apiKey: process.env.DEEPGRAM_API_KEY, sampleRate: 8000 },
+  stt: { provider: 'deepgram', apiKey: process.env.DEEPGRAM_API_KEY },
   tts: { provider: 'deepgram', apiKey: process.env.DEEPGRAM_API_KEY, voice: 'asteria' },
   mcp: { endpoint: process.env.MCP_ENDPOINT, timeout: 400 },
-  latency: { total: { target: 800, hardCap: 1200 }, stages: { stt: 200, mcp: 400, tts: 200 } },
-  session: { ttl: 3600, history: { maxTurns: 20, maxTokens: 4000 } },
-  bargeIn: { enabled: true, minSpeechDuration: 300, confidenceThreshold: 0.7, silenceThreshold: 0.3 },
 });
 
 const pipeline = createPipeline({
   config,
-  sessionManager: initializeSessionManager({ defaultTTL: 3600, maxTurns: 20, maxTokens: 4000 }),
-  latencyEnforcer: new LatencyBudgetEnforcer(config.latency),
   sttProvider: new DeepgramSTTProvider(),
   ttsProvider: new DeepgramTTSProvider(),
   mcpClient: new MCPClient({ endpoint: config.mcp.endpoint }),
 });
-
-// In your WebSocket server:
-const handler = createTwilioHandler({ bargeInEnabled: true });
-handler.on('audio:received', (chunk) => pipeline.processAudioChunk(sessionId, chunk));
-handler.on('barge-in:detected', () => pipeline.bargeIn(sessionId));
-pipeline.on('pipeline:tts:chunk', ({ data }) => handler.sendAudio(data.chunk));
 ```
 
-See the [`examples/`](./examples/) directory for complete working samples, including RAG voice agents, multi-agent orchestration, and minimal echo testing.
+> For a complete runnable server, see [`examples/quickstart/`](./examples/quickstart/) which includes Twilio webhook handling, health checks, and more.
+>
+> See the [`examples/`](./examples/) directory for additional samples, including RAG voice agents, multi-agent orchestration, and minimal echo testing.
 
 ## Packages
 
@@ -128,10 +136,13 @@ See the [`examples/`](./examples/) directory for complete working samples, inclu
 | Package                                                     | Description                                                                       |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | [`@reaatech/voice-agent-core`](./packages/core)             | Pipeline orchestrator, session management, latency enforcement, config, and types |
-| [`@reaatech/voice-agent-stt`](./packages/stt)               | Speech-to-text provider interface with Deepgram, AWS, and Google adapters         |
-| [`@reaatech/voice-agent-tts`](./packages/tts)               | Text-to-speech provider interface with Deepgram, AWS, and Google adapters         |
+| [`@reaatech/voice-agent-stt`](./packages/stt)               | Speech-to-text provider interface with 11 adapters: Deepgram, OpenAI, AssemblyAI, Groq, AWS, Google, and more |
+| [`@reaatech/voice-agent-tts`](./packages/tts)               | Text-to-speech provider interface with 6 adapters: Deepgram, ElevenLabs, Cartesia, AWS, Google, and more |
 | [`@reaatech/voice-agent-mcp-client`](./packages/mcp-client) | JSON-RPC 2.0 MCP client with tool discovery and response sanitization             |
-| [`@reaatech/voice-agent-telephony`](./packages/telephony)   | Twilio Media Streams WebSocket handler with barge-in detection                    |
+| [`@reaatech/voice-agent-telephony`](./packages/telephony)   | Multi-provider telephony handler (Twilio, Telnyx, SignalWire, Vonage) with barge-in detection |
+| [`@reaatech/voice-agent-webrtc`](./packages/webrtc)         | WebRTC browser transport with Opus codec support                                  |
+| [`@reaatech/voice-agent-simulator`](./packages/simulator)   | Local dev runner for testing voice agents without a phone number or cloud creds   |
+| [`@reaatech/create-voice-agent`](./packages/create-voice-agent) | Project scaffolding CLI to bootstrap new voice agent projects                   |
 
 ## Latency Budget
 
@@ -146,7 +157,8 @@ See the [`examples/`](./examples/) directory for complete working samples, inclu
 ## Pipeline Flow
 
 ```
-Twilio WebSocket  →  AudioChunk  →  STT  →  Utterance  →  MCP  →  AgentResponse  →  TTS  →  AudioChunk  →  Twilio
+Staged:  Twilio/WebRTC WebSocket → AudioChunk → STT → Utterance → MCP → AgentResponse → TTS → AudioChunk → Transport
+S2S:     Transport WebSocket → AudioChunk → S2S Provider (OpenAI/Gemini) → AudioChunk → Transport
 ```
 
 ## Documentation
@@ -155,6 +167,7 @@ Twilio WebSocket  →  AudioChunk  →  STT  →  Utterance  →  MCP  →  Agen
 - [`AGENTS.md`](./AGENTS.md) — Coding conventions and development guidelines
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — Contribution workflow, adding providers, and release process
 - [`LATENCY_BUDGET.md`](./docs/LATENCY_BUDGET.md) — Per-provider latency characteristics and tuning
+- [`infra/grafana/README.md`](./infra/grafana/README.md) — Grafana dashboard for pipeline metrics and cost tracking
 
 ## License
 
