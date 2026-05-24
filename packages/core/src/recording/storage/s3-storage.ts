@@ -46,8 +46,11 @@ export class S3Storage {
     }
 
     try {
-      const { S3Client } = await import('@aws-sdk/client-s3');
-      this.s3Client = new S3Client({ region: this.region }) as unknown as S3ClientLike;
+      // Dynamic import — @aws-sdk/client-s3 is an optional peer dependency
+      const s3Module = (await import('@aws-sdk/client-s3')) as {
+        S3Client: new (config: { region: string }) => S3ClientLike;
+      };
+      this.s3Client = new s3Module.S3Client({ region: this.region });
       return this.s3Client;
     } catch (error) {
       throw new S3OperationError(
@@ -63,16 +66,17 @@ export class S3Storage {
     contentType: string,
   ): Promise<string> {
     const client = await this.getClient();
-    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+    // Dynamic import — @aws-sdk/client-s3 is an optional peer dependency
+    const s3Module = (await import('@aws-sdk/client-s3')) as {
+      PutObjectCommand: new (config: S3PutObjectCommandConfig) => unknown;
+    };
 
-    const commandConfig: S3PutObjectCommandConfig = {
+    const command = new s3Module.PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       Body: body,
       ContentType: contentType,
-    };
-
-    const command = new PutObjectCommand(commandConfig);
+    });
     await client.send(command);
     return `s3://${this.bucket}/${key}`;
   }
@@ -127,10 +131,13 @@ export class S3Storage {
   async getMeta(sessionId: string): Promise<CallRecording | undefined> {
     try {
       const client = await this.getClient();
-      const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+      // Dynamic import — @aws-sdk/client-s3 is an optional peer dependency
+      const s3Module = (await import('@aws-sdk/client-s3')) as {
+        GetObjectCommand: new (config: { Bucket: string; Key: string }) => unknown;
+      };
 
       const key = `${this.prefix}${sessionId}/session.json`;
-      const command = new GetObjectCommand({
+      const command = new s3Module.GetObjectCommand({
         Bucket: this.bucket,
         Key: key,
       });
