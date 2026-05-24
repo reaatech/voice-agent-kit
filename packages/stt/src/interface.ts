@@ -146,10 +146,19 @@ export class STTProviderInterface {
       if (byte === undefined) {
         continue;
       }
-      const ulaw = ~byte;
-      let t = ((ulaw & 0x0f) << 4) + 0x84;
-      t <<= ((ulaw & 0x70) >> 4) + 1;
-      const sample = ulaw & 0x80 ? 0x84 - t : t - 0x84;
+      const ulaw = ~byte & 0xff;
+      const sign = ulaw & 0x80;
+      const exponent = (ulaw >> 4) & 0x07;
+      const mantissa = ulaw & 0x0f;
+      let sample: number;
+      if (exponent === 0) {
+        sample = (mantissa << 1) + 0x7f;
+      } else {
+        sample = ((mantissa << 4) + 0x80) << (exponent - 1);
+      }
+      if (sign) {
+        sample = -sample;
+      }
       linearBuffer.writeInt16LE(sample, i * 2);
     }
     return linearBuffer;

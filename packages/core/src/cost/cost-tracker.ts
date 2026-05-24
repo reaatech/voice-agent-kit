@@ -214,23 +214,7 @@ export class CostTracker {
       this.turns.set(sessionId, new Map());
     }
 
-    const sessionTurns = this.turns.get(sessionId);
-    if (!sessionTurns) {
-      const newMap = new Map<string, TrackedTurn>();
-      this.turns.set(sessionId, newMap);
-      const defaultProvider = Object.keys(this.config.providers)[0] ?? 'deepgram';
-      const turn: TrackedTurn = {
-        sessionId,
-        turnId,
-        audioDurationMs: 0,
-        characterCount: 0,
-        inputTokens: 0,
-        outputTokens: 0,
-        provider: defaultProvider,
-      };
-      newMap.set(turnId, turn);
-      return turn;
-    }
+    const sessionTurns = this.turns.get(sessionId) as Map<string, TrackedTurn>;
 
     if (!sessionTurns.has(turnId)) {
       const defaultProvider = Object.keys(this.config.providers)[0] ?? 'deepgram';
@@ -245,11 +229,7 @@ export class CostTracker {
       });
     }
 
-    const result = sessionTurns.get(turnId);
-    if (!result) {
-      throw new Error(`Failed to get or create turn ${turnId}`);
-    }
-    return result;
+    return sessionTurns.get(turnId) as TrackedTurn;
   }
 
   destroy(): void {
