@@ -173,7 +173,7 @@ export class MCPClient {
 
       return {
         text: this.sanitizeResponse(text),
-        toolCalls: response.toolCalls,
+        toolCalls: response.toolCalls ?? [],
         latencyMs,
         confidence: 0.95,
       };

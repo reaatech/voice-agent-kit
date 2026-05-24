@@ -1,3 +1,14 @@
+// Composite providers
+export {
+  type CompositeProviderOptions,
+  CompositeSTTProvider,
+  CompositeTTSProvider,
+  createCompositeSTTProvider,
+  createCompositeTTSProvider,
+  type ProviderHealth,
+} from './composite.js';
+// Failover manager
+export { FailoverManager } from './failover.js';
 export {
   createMockMCPClient,
   MockMCPClient,

@@ -6,7 +6,7 @@
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
-Provider-agnostic speech-to-text interface with three adapter implementations: Deepgram, AWS Transcribe, and Google Cloud Speech-to-Text. Built-in audio format conversion between mulaw and linear16, plus sample rate resampling.
+Provider-agnostic speech-to-text interface with seven adapter implementations: Deepgram, AWS Transcribe, Google Cloud Speech-to-Text, OpenAI Realtime, OpenAI Whisper, AssemblyAI, and Groq Whisper. Built-in audio format conversion between mulaw and linear16, plus sample rate resampling.
 
 ## Installation
 
@@ -33,6 +33,10 @@ npm install @google-cloud/speech
 - **Deepgram adapter** — WebSocket streaming with nova-2, interim results, VAD, smart formatting
 - **AWS Transcribe adapter** — Streaming recognition with speaker labels, vocabulary, channel identification
 - **Google Cloud STT adapter** — Bidirectional streaming with enhanced models, punctuation, word time offsets
+- **OpenAI Realtime adapter** — WebSocket streaming with GPT-4o realtime transcription
+- **OpenAI Whisper adapter** — HTTP batch transcription for short utterances
+- **AssemblyAI adapter** — WebSocket streaming with high accuracy
+- **Groq Whisper adapter** — Ultra-fast Whisper inference via HTTP
 - **Audio format conversion** — Mulaw ↔ linear16 and sample rate resampling in the base interface
 - **Auto-reconnect** — Configurable retry with exponential backoff on all adapters
 - **Audio queue** — Buffers audio chunks during reconnection to prevent data loss
@@ -167,13 +171,87 @@ interface GoogleCloudSTTConfig extends STTConfig {
 }
 ```
 
+### OpenAIRealtimeProvider
+
+```typescript
+class OpenAIRealtimeProvider extends EventEmitter implements STTProvider {
+  readonly name = 'openai-realtime';
+  constructor(options?: OpenAIRealtimeOptions);
+}
+
+interface OpenAIRealtimeConfig extends STTConfig {
+  model?: 'gpt-4o-realtime-preview';
+  language?: string;
+  voice?: 'alloy' | 'echo' | 'shimmer';
+  temperature?: number;
+  maxTokens?: number;
+}
+```
+
+WebSocket streaming adapter for GPT-4o realtime transcription. Supports interim results and native 24kHz audio.
+
+### OpenAIWhisperProvider
+
+```typescript
+class OpenAIWhisperProvider extends EventEmitter implements STTProvider {
+  readonly name = 'openai-whisper';
+  constructor(options?: OpenAIWhisperOptions);
+}
+
+interface OpenAIWhisperConfig extends STTConfig {
+  model?: 'whisper-1';
+  language?: string;
+  prompt?: string;
+  responseFormat?: 'json' | 'text' | 'srt';
+}
+```
+
+HTTP batch adapter for OpenAI Whisper. Best suited for short utterances. No streaming support.
+
+### AssemblyAIProvider
+
+```typescript
+class AssemblyAIProvider extends EventEmitter implements STTProvider {
+  readonly name = 'assemblyai';
+  constructor(options?: AssemblyAIOptions);
+}
+
+interface AssemblyAIConfig extends STTConfig {
+  languageCode?: string;
+  endUtteranceSilenceThreshold?: number;
+  wordBoost?: string[];
+  punctuate?: boolean;
+  formatText?: boolean;
+}
+```
+
+WebSocket streaming adapter with high accuracy and end-utterance silence detection.
+
+### GroqWhisperProvider
+
+```typescript
+class GroqWhisperProvider extends EventEmitter implements STTProvider {
+  readonly name = 'groq-whisper';
+  constructor(options?: GroqWhisperOptions);
+}
+
+interface GroqWhisperConfig extends STTConfig {
+  model?: 'whisper-large-v3' | 'whisper-large-v3-turbo';
+  language?: string;
+  prompt?: string;
+  responseFormat?: 'json' | 'verbose_json' | 'text';
+}
+```
+
+Ultra-fast Whisper inference via Groq's LPU hardware. HTTP batch mode with sub-100ms P50 latency.
+
 ### Provider Factory
 
 ```typescript
 import { createSTTProvider } from '@reaatech/voice-agent-stt';
 
 const stt = createSTTProvider({
-  provider: 'deepgram',            // 'deepgram' | 'aws-transcribe' | 'google-cloud-stt'
+  provider: 'deepgram',            // 'deepgram' | 'aws-transcribe' | 'google-cloud-stt' | 'openai-realtime' | 'openai-whisper' | 'assemblyai' | 'groq-whisper' | 'mock'
   config: { provider: 'deepgram', apiKey: '...' },
 });
 ```

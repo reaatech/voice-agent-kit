@@ -62,6 +62,21 @@ class Observability {
     description: 'Counter for latency budget exceeded events with stage label',
   });
 
+  public costPerTurn = this.meter.createHistogram('voice.cost.per_turn', {
+    description: 'Cost per turn in cents (USD cents)',
+    unit: 'cents',
+  });
+
+  public costTotal = this.meter.createCounter('voice.cost.total', {
+    description: 'Cumulative total cost in cents (USD cents)',
+    unit: 'cents',
+  });
+
+  public costPerMinute = this.meter.createGauge('voice.cost.per_minute', {
+    description: 'Current cost rate per minute in cents',
+    unit: 'cents/min',
+  });
+
   constructor(config: Partial<ObservabilityConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
   }
@@ -178,6 +193,32 @@ class Observability {
 
   recordBargeIn(sessionId: string): void {
     this.bargeInCount.add(1, { session_id: sessionId });
+  }
+
+  recordTurnCost(params: {
+    sessionId: string;
+    turnId: string;
+    costCents: number;
+    sttCostCents: number;
+    ttsCostCents: number;
+    mcpCostCents: number;
+  }): void {
+    const { sessionId, costCents, sttCostCents, ttsCostCents, mcpCostCents } = params;
+
+    this.costPerTurn.record(costCents, {
+      session_id: sessionId,
+    });
+
+    this.costTotal.add(costCents, {
+      session_id: sessionId,
+      breakdown: `stt:${sttCostCents},tts:${ttsCostCents},mcp:${mcpCostCents}`,
+    });
+  }
+
+  recordCostPerMinute(sessionId: string, costCentsPerMinute: number): void {
+    this.costPerMinute.record(costCentsPerMinute, {
+      session_id: sessionId,
+    });
   }
 
   incrementActiveSessions(): void {

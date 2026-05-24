@@ -40,6 +40,34 @@ Voice agents require strict latency budgets to feel responsive. The target is **
 - **Notes**: Good multilingual support
 - **Tuning**: Use `model: 'latest_short'` for lower latency
 
+#### OpenAI Realtime
+- **P50**: 120ms
+- **P90**: 200ms
+- **P99**: 350ms
+- **Notes**: WebSocket streaming, native 24kHz
+- **Tuning**: Use `input_audio_transcription` model for better latency
+
+#### OpenAI Whisper (HTTP)
+- **P50**: 200ms
+- **P90**: 400ms
+- **P99**: 800ms
+- **Notes**: HTTP batch mode, not streaming. Good for short utterances.
+- **Tuning**: Keep audio under 25MB
+
+#### AssemblyAI
+- **P50**: 100ms
+- **P90**: 180ms
+- **P99**: 300ms
+- **Notes**: WebSocket streaming, good accuracy
+- **Tuning**: Set `end_utterance_silence_threshold` to 300
+
+#### Groq Whisper
+- **P50**: 80ms
+- **P90**: 150ms
+- **P99**: 250ms
+- **Notes**: Fastest Whisper inference. HTTP batch.
+- **Tuning**: Use `whisper-large-v3-turbo` model
+
 ### TTS Providers
 
 #### Deepgram Aura
@@ -62,6 +90,37 @@ Voice agents require strict latency budgets to feel responsive. The target is **
 - **P99**: 400ms
 - **Notes**: Good voice quality
 - **Tuning**: Use WaveNet voices for better quality
+
+#### ElevenLabs (Turbo v2.5)
+- **P50**: 150ms
+- **P90**: 250ms
+- **P99**: 400ms
+- **Notes**: High quality voices, streaming
+- **Tuning**: Set `optimize_streaming_latency=4`
+
+#### Cartesia (Sonic)
+- **P50**: 80ms
+- **P90**: 150ms
+- **P99**: 250ms
+- **Notes**: Ultra-low latency, streaming. Good for real-time.
+- **Tuning**: Use `encoding: pcm_mulaw` for Twilio
+
+#### OpenAI TTS
+- **P50**: 200ms
+- **P90**: 350ms
+- **P99**: 600ms
+- **Notes**: Good quality, higher latency
+- **Tuning**: Use `tts-1` model for lower latency
+
+### Speech-to-Speech Providers
+
+#### OpenAI Realtime S2S
+- **P50**: 300ms, **P90**: 500ms, **P99**: 800ms
+- **Notes**: Single-hop STT→LLM→TTS. Higher latency but more natural conversation.
+
+#### Gemini Live S2S
+- **P50**: 250ms, **P90**: 450ms, **P99**: 700ms
+- **Notes**: Google's multimodal live API. Good voice quality.
 
 ## Latency Budget Enforcement
 
@@ -119,6 +178,9 @@ if (budget.isExceeded()) {
 - `voice.tts.first_byte_ms` — time to first audio byte
 - `voice.mcp.latency_ms` — MCP round-trip time
 - `voice.latency_budget.exceeded` — counter with stage label
+- `voice.cost.per_turn` — per-turn cost in cents (histogram)
+- `voice.cost.total` — cumulative cost (counter)
+- `voice.cost.per_minute` — cost rate (gauge)
 
 ### Alerting
 

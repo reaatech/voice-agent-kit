@@ -6,7 +6,7 @@
 
 > **Status:** Pre-1.0 — APIs may change in minor versions. Pin to a specific version in production.
 
-Provider-agnostic text-to-speech interface with three adapter implementations: Deepgram Aura, AWS Polly, and Google Cloud Text-to-Speech. Streaming audio output via `AsyncIterable<AudioChunk>`, cancelable synthesis, and Twilio-ready audio formatting.
+Provider-agnostic text-to-speech interface with five adapter implementations: Deepgram Aura, AWS Polly, Google Cloud Text-to-Speech, ElevenLabs, and Cartesia. Streaming audio output via `AsyncIterable<AudioChunk>`, cancelable synthesis, and Twilio-ready audio formatting.
 
 ## Installation
 
@@ -33,6 +33,8 @@ npm install @google-cloud/text-to-speech
 - **Deepgram Aura adapter** — Low-latency HTTP/2 streaming with voice selection and mulaw encoding
 - **AWS Polly adapter** — Neural engine with SSML support, multiple voice IDs, sample rate configuration
 - **Google Cloud TTS adapter** — 220+ voices, speaking rate, pitch, volume control, and SSML gender
+- **ElevenLabs adapter** — Streaming HTTP/2 with ultra-realistic voices (Turbo v2.5, Flash v2.5)
+- **Cartesia adapter** — Ultra-low latency streaming with Sonic model and emotion control
 - **Cancelable synthesis** — `cancel()` stops in-progress TTS immediately (barge-in support)
 - **Twilio audio formatting** — Automatic mulaw 8kHz conversion via `formatAudioForTwilio()`
 - **Silence generation** — `createSilenceChunk()` for injecting pauses between utterances
@@ -171,13 +173,58 @@ interface GoogleCloudTTSConfig extends TTSConfig {
 }
 ```
 
+### ElevenLabsProvider
+
+```typescript
+class ElevenLabsProvider implements TTSProvider {
+  readonly name = 'elevenlabs';
+  readonly supportsStreaming = true;
+  constructor(options?: ElevenLabsOptions);
+  getLastFirstByteLatency(): number | null;
+}
+
+interface ElevenLabsConfig extends TTSConfig {
+  modelId?: 'eleven_turbo_v2_5' | 'eleven_flash_v2_5';
+  voiceId?: string;
+  stability?: number;
+  similarityBoost?: number;
+  optimizeStreamingLatency?: number;
+  outputFormat?: 'mp3_44100' | 'pcm_8000' | 'mulaw_8000';
+}
+```
+
+Streaming HTTP/2 adapter for ElevenLabs ultra-realistic voices. Supports latency optimization and multiple output formats.
+
+### CartesiaProvider
+
+```typescript
+class CartesiaProvider implements TTSProvider {
+  readonly name = 'cartesia';
+  readonly supportsStreaming = true;
+  constructor(options?: CartesiaOptions);
+  getLastFirstByteLatency(): number | null;
+}
+
+interface CartesiaConfig extends TTSConfig {
+  modelId?: 'sonic' | 'sonic-2';
+  voiceId?: string;
+  speed?: 'slowest' | 'slow' | 'normal' | 'fast' | 'fastest';
+  emotion?: 'anger' | 'positivity' | 'surprise' | 'sadness' | 'curiosity' | 'neutral';
+  language?: string;
+  outputFormat?: 'raw' | 'wav' | 'mp3';
+  sampleRate?: number;
+}
+```
+
+Ultra-low latency streaming adapter with Sonic model and emotion control. Sub-100ms P50 latency for real-time use.
+
 ### Provider Factory
 
 ```typescript
 import { createTTSProvider } from '@reaatech/voice-agent-tts';
 
 const tts = createTTSProvider({
-  provider: 'deepgram',             // 'deepgram' | 'aws-polly' | 'google-cloud-tts'
+  provider: 'deepgram',             // 'deepgram' | 'aws-polly' | 'google-cloud-tts' | 'elevenlabs' | 'cartesia'
   config: { provider: 'deepgram', apiKey: '...' },
 });
 ```

@@ -9,4 +9,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   tsconfig: './tsconfig.json',
+  external: ['@aws-sdk/client-s3'],
 });

@@ -48,6 +48,7 @@ export default defineConfig({
       '@reaatech/voice-agent-tts': resolve(__dirname, 'packages/tts/src/index.ts'),
       '@reaatech/voice-agent-telephony': resolve(__dirname, 'packages/telephony/src/index.ts'),
       '@reaatech/voice-agent-mcp-client': resolve(__dirname, 'packages/mcp-client/src/index.ts'),
+      '@reaatech/voice-agent-webrtc': resolve(__dirname, 'packages/webrtc/src/index.ts'),
     },
   },
 });

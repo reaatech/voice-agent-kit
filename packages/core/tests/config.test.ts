@@ -77,7 +77,8 @@ describe('Config', () => {
           confidenceThreshold: 0.8,
           silenceThreshold: 0.4,
         },
-      };
+        mode: 'staged' as const,
+      } satisfies VoiceAgentKitConfig;
 
       const result = defineConfig(config);
       expect(result).toEqual(config);
