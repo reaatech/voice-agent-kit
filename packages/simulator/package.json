@@ -66,7 +66,7 @@
     "@reaatech/voice-agent-tts": "workspace:*",
     "@reaatech/voice-agent-mcp-client": "workspace:*",
     "chalk": "^5.3.0",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
