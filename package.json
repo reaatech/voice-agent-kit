@@ -48,5 +48,10 @@
   "bugs": {
     "url": "https://github.com/reaatech/voice-agent-kit/issues"
   },
-  "homepage": "https://github.com/reaatech/voice-agent-kit#readme"
+  "homepage": "https://github.com/reaatech/voice-agent-kit#readme",
+  "pnpm": {
+    "overrides": {
+      "ws": "^8.21.0"
+    }
+  }
 }
