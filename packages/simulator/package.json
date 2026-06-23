@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-simulator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local simulator and CLI dev runner for the voice agent pipeline — no Twilio or phone number required",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",

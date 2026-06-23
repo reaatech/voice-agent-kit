@@ -1,6 +1,6 @@
 {
   "name": "@reaatech/voice-agent-webrtc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "WebRTC browser transport for voice AI agents with WebSocket + Opus support",
   "license": "MIT",
   "author": "Rick Somers <rick@reaatech.com> (https://reaatech.com)",
