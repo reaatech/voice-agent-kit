@@ -68,7 +68,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@aws-sdk/client-transcribe-streaming": "^3.1031.0",
     "@aws-sdk/credential-provider-ini": "^3.972.56",
     "@google-cloud/speech": "^7.3.2",
