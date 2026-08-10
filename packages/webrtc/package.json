@@ -50,7 +50,7 @@
   "dependencies": {
     "@reaatech/voice-agent-core": "workspace:*",
     "debug": "^4.3.4",
-    "ws": "^8.21.0"
+    "ws": "^8.21.2"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
